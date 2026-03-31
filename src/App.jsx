@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import ClienteForm from './components/ClienteForm.jsx'
 import ClienteList from './components/ClienteList.jsx'
 import Filtros from './components/Filtros.jsx'
+import Login from './components/Login.jsx'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
 
@@ -100,6 +101,7 @@ function formatarMoeda(valor) {
 }
 
 function App() {
+  const [estaLogado, setEstaLogado] = useState(false)
   const [clientes, setClientes] = useState(carregarClientesIniciais)
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
@@ -189,6 +191,17 @@ function App() {
     window.open(link, '_blank')
   }
 
+  function entrarNoSistema() {
+    setEstaLogado(true)
+  }
+
+  function sairDoSistema() {
+    setEstaLogado(false)
+    setClienteEmEdicao(null)
+    setBusca('')
+    setStatus('todos')
+  }
+
   const termoBusca = busca.trim().toLowerCase()
   const totalAReceber = clientes.reduce((total, cliente) => {
     return cliente.status === 'pendente'
@@ -222,6 +235,10 @@ function App() {
     return correspondeBusca && correspondeStatus
   })
 
+  if (!estaLogado) {
+    return <Login onEntrar={entrarNoSistema} />
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -234,10 +251,22 @@ function App() {
           </p>
         </div>
 
-        <div className="header-summary">
-          <span className="summary-label">Base ativa</span>
-          <strong>{clientes.length}</strong>
-          <span className="summary-text">Registros atualizados em tempo real</span>
+        <div className="header-side">
+          <div className="header-summary">
+            <span className="summary-label">Base ativa</span>
+            <strong>{clientes.length}</strong>
+            <span className="summary-text">
+              Registros atualizados em tempo real
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className="button button-ghost header-logout"
+            onClick={sairDoSistema}
+          >
+            Sair
+          </button>
         </div>
       </header>
 
