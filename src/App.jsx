@@ -5,6 +5,7 @@ import Filtros from './components/Filtros.jsx'
 import Login from './components/Login.jsx'
 import Cadastro from './components/Cadastro.jsx'
 import RecuperarSenha from './components/RecuperarSenha.jsx'
+import NovaSenha from './components/NovaSenha.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
@@ -146,10 +147,33 @@ function formatarMoeda(valor) {
   }).format(valor)
 }
 
+function urlIndicaRecuperacaoSenha() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const hashAtual = window.location.hash.toLowerCase()
+  const buscaAtual = window.location.search.toLowerCase()
+
+  return (
+    hashAtual.includes('type=recovery') ||
+    buscaAtual.includes('type=recovery')
+  )
+}
+
+function limparUrlAutenticacao() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.history.replaceState({}, document.title, window.location.pathname)
+}
+
 function App() {
   const [sessao, setSessao] = useState(null)
   const [authCarregando, setAuthCarregando] = useState(true)
   const [telaAuth, setTelaAuth] = useState('login')
+  const [recuperacaoSenhaAtiva, setRecuperacaoSenhaAtiva] = useState(false)
   const [clientes, setClientes] = useState([])
   const [clientesCarregando, setClientesCarregando] = useState(false)
   const [mensagemSistema, setMensagemSistema] = useState(mensagemInicialSistema)
@@ -175,7 +199,15 @@ function App() {
           return
         }
 
-        setSessao(data.session ?? null)
+        const sessaoAtual = data.session ?? null
+        const estaEmRecuperacao = Boolean(sessaoAtual) && urlIndicaRecuperacaoSenha()
+
+        setSessao(sessaoAtual)
+        setRecuperacaoSenhaAtiva(estaEmRecuperacao)
+
+        if (estaEmRecuperacao) {
+          limparUrlAutenticacao()
+        }
       } finally {
         if (ativo) {
           setAuthCarregando(false)
@@ -193,6 +225,16 @@ function App() {
       }
 
       setSessao(novaSessao ?? null)
+
+      if (_event === 'PASSWORD_RECOVERY') {
+        setRecuperacaoSenhaAtiva(true)
+        limparUrlAutenticacao()
+      }
+
+      if (_event === 'SIGNED_OUT') {
+        setRecuperacaoSenhaAtiva(false)
+      }
+
       setAuthCarregando(false)
     })
 
@@ -437,11 +479,24 @@ function App() {
     }
 
     setTelaAuth('login')
+    setRecuperacaoSenhaAtiva(false)
     setClientes([])
     setMensagemSistema(mensagemInicialSistema)
     setClienteEmEdicao(null)
     setBusca('')
     setStatus('todos')
+  }
+
+  async function finalizarRecuperacaoSenha() {
+    limparUrlAutenticacao()
+    setRecuperacaoSenhaAtiva(false)
+    setTelaAuth('login')
+
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      setSessao(null)
+    }
   }
 
   const termoBusca = busca.trim().toLowerCase()
@@ -487,6 +542,10 @@ function App() {
         </div>
       </div>
     )
+  }
+
+  if (recuperacaoSenhaAtiva && sessao) {
+    return <NovaSenha onSenhaAtualizada={finalizarRecuperacaoSenha} />
   }
 
   if (!sessao) {
