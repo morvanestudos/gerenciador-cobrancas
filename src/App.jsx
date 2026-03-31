@@ -71,7 +71,7 @@ function gerarLinkWhatsApp(cliente) {
   const numero = numeroLimpo.startsWith('55')
     ? numeroLimpo
     : `55${numeroLimpo}`
-  const mensagem = `Ola ${cliente.nome}, tudo bem? Estou entrando em contato sobre a cobranca no valor de ${cliente.valor} com vencimento em ${cliente.vencimento}.`
+  const mensagem = `Olá ${cliente.nome}, tudo bem? Estou entrando em contato sobre a cobrança no valor de ${cliente.valor} com vencimento em ${cliente.vencimento}.`
 
   return `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`
 }
@@ -227,10 +227,10 @@ function App() {
       <header className="app-header">
         <div className="app-header-content">
           <span className="app-kicker">Painel operacional</span>
-          <h1>Gestao de Clientes e Cobrancas</h1>
+          <h1>Gestão de Clientes e Cobranças</h1>
           <p>
-            Centralize clientes, acompanhe recebimentos e acelere cobrancas com
-            acoes rapidas.
+            Centralize clientes, acompanhe recebimentos e acelere cobranças com
+            ações rápidas.
           </p>
         </div>
 
@@ -246,7 +246,7 @@ function App() {
           <article className="dashboard-card dashboard-card-receber">
             <span className="dashboard-label">A receber</span>
             <strong>{formatarMoeda(totalAReceber)}</strong>
-            <p>Cobrancas com status pendente.</p>
+            <p>Cobranças com status pendente.</p>
           </article>
 
           <article className="dashboard-card dashboard-card-recebido">

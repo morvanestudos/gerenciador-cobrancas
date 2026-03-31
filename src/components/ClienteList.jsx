@@ -13,7 +13,7 @@ export default function ClienteList({
         <div>
           <span className="section-tag">Carteira</span>
           <h2>Clientes cadastrados</h2>
-          <p>Acompanhe status, cobrancas e acoes rapidas em um so lugar.</p>
+          <p>Acompanhe status, cobranças e ações rápidas em um só lugar.</p>
         </div>
 
         <span className="list-count">

@@ -34,8 +34,8 @@ export default function Filtros({ busca, onBuscaChange, status, onStatusChange }
         </div>
 
         <div className="filter-note">
-          <strong>Atualizacao imediata</strong>
-          <span>A lista responde aos filtros conforme voce digita.</span>
+          <strong>Atualização imediata</strong>
+          <span>A lista responde aos filtros conforme você digita.</span>
         </div>
       </div>
     </section>

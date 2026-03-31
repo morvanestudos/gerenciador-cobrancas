@@ -131,8 +131,8 @@ export default function ClienteForm({
         <h2>{emEdicao ? 'Atualizar cliente' : 'Novo cliente'}</h2>
         <p>
           {emEdicao
-            ? 'Revise os dados e confirme a atualizacao.'
-            : 'Cadastre um cliente e registre a cobranca inicial.'}
+            ? 'Revise os dados e confirme a atualização.'
+            : 'Cadastre um cliente e registre a cobrança inicial.'}
         </p>
       </div>
 
@@ -142,9 +142,9 @@ export default function ClienteForm({
       >
         {emEdicao && (
           <div className="edit-mode-banner">
-            <span className="edit-mode-tag">Edicao em andamento</span>
+            <span className="edit-mode-tag">Edição em andamento</span>
             <strong>Editando: {nomeClienteEmEdicao}</strong>
-            <p>As alteracoes serao aplicadas ao salvar.</p>
+            <p>As alterações serão aplicadas ao salvar.</p>
           </div>
         )}
 
@@ -177,7 +177,7 @@ export default function ClienteForm({
           </div>
 
           <div className="field">
-            <label htmlFor="valor">Valor da cobranca</label>
+            <label htmlFor="valor">Valor da cobrança</label>
             <input
               id="valor"
               name="valor"
@@ -214,7 +214,7 @@ export default function ClienteForm({
             </button>
           )}
           <button type="submit" className="button button-primary">
-            {emEdicao ? 'Salvar alteracoes' : 'Salvar cliente'}
+            {emEdicao ? 'Salvar alterações' : 'Salvar cliente'}
           </button>
         </div>
       </form>
