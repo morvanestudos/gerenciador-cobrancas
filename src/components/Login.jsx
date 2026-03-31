@@ -30,7 +30,7 @@ function traduzirMensagemErro(mensagem) {
   return 'Não foi possível concluir a operação. Tente novamente.'
 }
 
-export default function Login() {
+export default function Login({ onAbrirCadastro }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mensagem, setMensagem] = useState(mensagemInicial)
@@ -71,47 +71,6 @@ export default function Login() {
       })
     }
 
-    setCarregandoAcao(false)
-  }
-
-  async function handleCriarConta() {
-    if (!validarCampos()) {
-      return
-    }
-
-    setCarregandoAcao(true)
-    setMensagem(mensagemInicial)
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: senha,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    })
-
-    if (error) {
-      setMensagem({
-        tipo: 'erro',
-        texto: traduzirMensagemErro(error.message),
-      })
-      setCarregandoAcao(false)
-      return
-    }
-
-    if (data.session) {
-      setMensagem({
-        tipo: 'sucesso',
-        texto: 'Conta criada com sucesso. Seu acesso já foi liberado.',
-      })
-      setCarregandoAcao(false)
-      return
-    }
-
-    setMensagem({
-      tipo: 'sucesso',
-      texto: 'Conta criada. Verifique seu e-mail para confirmar o acesso.',
-    })
     setCarregandoAcao(false)
   }
 
@@ -202,7 +161,7 @@ export default function Login() {
             <button
               type="button"
               className="login-link login-link-strong"
-              onClick={handleCriarConta}
+              onClick={onAbrirCadastro}
               disabled={carregandoAcao}
             >
               Criar conta

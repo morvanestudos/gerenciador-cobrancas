@@ -3,6 +3,7 @@ import ClienteForm from './components/ClienteForm.jsx'
 import ClienteList from './components/ClienteList.jsx'
 import Filtros from './components/Filtros.jsx'
 import Login from './components/Login.jsx'
+import Cadastro from './components/Cadastro.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
@@ -104,6 +105,7 @@ function formatarMoeda(valor) {
 function App() {
   const [sessao, setSessao] = useState(null)
   const [authCarregando, setAuthCarregando] = useState(true)
+  const [telaAuth, setTelaAuth] = useState('login')
   const [clientes, setClientes] = useState(carregarClientesIniciais)
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
@@ -238,6 +240,7 @@ function App() {
       return
     }
 
+    setTelaAuth('login')
     setClienteEmEdicao(null)
     setBusca('')
     setStatus('todos')
@@ -289,7 +292,11 @@ function App() {
   }
 
   if (!sessao) {
-    return <Login />
+    if (telaAuth === 'cadastro') {
+      return <Cadastro onVoltarLogin={() => setTelaAuth('login')} />
+    }
+
+    return <Login onAbrirCadastro={() => setTelaAuth('cadastro')} />
   }
 
   return (
