@@ -30,7 +30,7 @@ function traduzirMensagemErro(mensagem) {
   return 'Não foi possível concluir a operação. Tente novamente.'
 }
 
-export default function Login({ onAbrirCadastro }) {
+export default function Login({ onAbrirCadastro, onAbrirRecuperacao }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mensagem, setMensagem] = useState(mensagemInicial)
@@ -155,7 +155,12 @@ export default function Login({ onAbrirCadastro }) {
           </button>
 
           <div className="login-links">
-            <button type="button" className="login-link">
+            <button
+              type="button"
+              className="login-link"
+              onClick={onAbrirRecuperacao}
+              disabled={carregandoAcao}
+            >
               Esqueci minha senha
             </button>
             <button

@@ -4,6 +4,7 @@ import ClienteList from './components/ClienteList.jsx'
 import Filtros from './components/Filtros.jsx'
 import Login from './components/Login.jsx'
 import Cadastro from './components/Cadastro.jsx'
+import RecuperarSenha from './components/RecuperarSenha.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
@@ -493,7 +494,18 @@ function App() {
       return <Cadastro onVoltarLogin={() => setTelaAuth('login')} />
     }
 
-    return <Login onAbrirCadastro={() => setTelaAuth('cadastro')} />
+    if (telaAuth === 'recuperar-senha') {
+      return (
+        <RecuperarSenha onVoltarLogin={() => setTelaAuth('login')} />
+      )
+    }
+
+    return (
+      <Login
+        onAbrirCadastro={() => setTelaAuth('cadastro')}
+        onAbrirRecuperacao={() => setTelaAuth('recuperar-senha')}
+      />
+    )
   }
 
   return (
