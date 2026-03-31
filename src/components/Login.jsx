@@ -1,12 +1,118 @@
 import { useState } from 'react'
+import { supabase } from '../lib/supabase.js'
 
-export default function Login({ onEntrar }) {
+const mensagemInicial = {
+  tipo: '',
+  texto: '',
+}
+
+function traduzirMensagemErro(mensagem) {
+  if (!mensagem) {
+    return 'Não foi possível concluir a operação. Tente novamente.'
+  }
+
+  if (mensagem.includes('Invalid login credentials')) {
+    return 'E-mail ou senha inválidos.'
+  }
+
+  if (mensagem.includes('Email not confirmed')) {
+    return 'Confirme seu e-mail antes de entrar.'
+  }
+
+  if (mensagem.includes('User already registered')) {
+    return 'Já existe uma conta cadastrada com este e-mail.'
+  }
+
+  if (mensagem.includes('Password should be at least')) {
+    return 'A senha deve ter pelo menos 6 caracteres.'
+  }
+
+  return 'Não foi possível concluir a operação. Tente novamente.'
+}
+
+export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [mensagem, setMensagem] = useState(mensagemInicial)
+  const [carregandoAcao, setCarregandoAcao] = useState(false)
 
-  function handleSubmit(event) {
+  function validarCampos() {
+    if (!email.trim() || !senha) {
+      setMensagem({
+        tipo: 'erro',
+        texto: 'Informe e-mail e senha para continuar.',
+      })
+
+      return false
+    }
+
+    return true
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault()
-    onEntrar({ email, senha })
+
+    if (!validarCampos()) {
+      return
+    }
+
+    setCarregandoAcao(true)
+    setMensagem(mensagemInicial)
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: senha,
+    })
+
+    if (error) {
+      setMensagem({
+        tipo: 'erro',
+        texto: traduzirMensagemErro(error.message),
+      })
+    }
+
+    setCarregandoAcao(false)
+  }
+
+  async function handleCriarConta() {
+    if (!validarCampos()) {
+      return
+    }
+
+    setCarregandoAcao(true)
+    setMensagem(mensagemInicial)
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: senha,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    })
+
+    if (error) {
+      setMensagem({
+        tipo: 'erro',
+        texto: traduzirMensagemErro(error.message),
+      })
+      setCarregandoAcao(false)
+      return
+    }
+
+    if (data.session) {
+      setMensagem({
+        tipo: 'sucesso',
+        texto: 'Conta criada com sucesso. Seu acesso já foi liberado.',
+      })
+      setCarregandoAcao(false)
+      return
+    }
+
+    setMensagem({
+      tipo: 'sucesso',
+      texto: 'Conta criada. Verifique seu e-mail para confirmar o acesso.',
+    })
+    setCarregandoAcao(false)
   }
 
   return (
@@ -50,8 +156,12 @@ export default function Login({ onEntrar }) {
             <input
               id="login-email"
               type="email"
+              required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                setMensagem(mensagemInicial)
+              }}
               placeholder="seuemail@empresa.com"
             />
           </div>
@@ -61,21 +171,40 @@ export default function Login({ onEntrar }) {
             <input
               id="login-senha"
               type="password"
+              required
               value={senha}
-              onChange={(event) => setSenha(event.target.value)}
+              onChange={(event) => {
+                setSenha(event.target.value)
+                setMensagem(mensagemInicial)
+              }}
               placeholder="Digite sua senha"
             />
           </div>
 
-          <button type="submit" className="button button-primary login-submit">
-            Entrar
+          {mensagem.texto && (
+            <div className={`login-message login-message-${mensagem.tipo}`}>
+              {mensagem.texto}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="button button-primary login-submit"
+            disabled={carregandoAcao}
+          >
+            {carregandoAcao ? 'Processando...' : 'Entrar'}
           </button>
 
           <div className="login-links">
             <button type="button" className="login-link">
               Esqueci minha senha
             </button>
-            <button type="button" className="login-link login-link-strong">
+            <button
+              type="button"
+              className="login-link login-link-strong"
+              onClick={handleCriarConta}
+              disabled={carregandoAcao}
+            >
               Criar conta
             </button>
           </div>

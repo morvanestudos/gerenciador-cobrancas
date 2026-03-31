@@ -61,12 +61,38 @@ select {
   min-height: 100vh;
 }
 
+.auth-loading-shell,
 .login-shell {
   min-height: 100vh;
   padding: 32px 22px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.auth-loading-card {
+  width: min(420px, 100%);
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(45, 120, 80, 0.12) 0%, transparent 30%),
+    linear-gradient(135deg, #ffffff 0%, #eff6f1 100%);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-loading-card strong {
+  font-size: 1.55rem;
+  line-height: 1.1;
+  color: var(--primary-deep);
+}
+
+.auth-loading-card p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .login-layout {
@@ -171,6 +197,26 @@ select {
   margin-top: 8px;
 }
 
+.login-message {
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.login-message-sucesso {
+  background: #edf8f0;
+  border-color: #c8e7d0;
+  color: var(--success-text);
+}
+
+.login-message-erro {
+  background: #fff4f2;
+  border-color: #efc4bc;
+  color: var(--danger-text);
+}
+
 .login-links {
   display: flex;
   justify-content: space-between;
@@ -190,6 +236,11 @@ select {
 
 .login-link:hover {
   color: var(--primary-dark);
+}
+
+.login-link:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .login-link-strong {
@@ -599,6 +650,13 @@ select {
   box-shadow: var(--shadow-soft);
 }
 
+.button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
 .button:focus-visible {
   outline: 3px solid rgba(47, 129, 80, 0.2);
   outline-offset: 2px;
@@ -880,10 +938,12 @@ select {
 }
 
 @media (max-width: 640px) {
+  .auth-loading-shell,
   .login-shell {
     padding-inline: 16px;
   }
 
+  .auth-loading-card,
   .login-brand-panel,
   .login-card {
     padding: 22px 20px;

@@ -3,6 +3,7 @@ import ClienteForm from './components/ClienteForm.jsx'
 import ClienteList from './components/ClienteList.jsx'
 import Filtros from './components/Filtros.jsx'
 import Login from './components/Login.jsx'
+import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
 
@@ -101,11 +102,50 @@ function formatarMoeda(valor) {
 }
 
 function App() {
-  const [estaLogado, setEstaLogado] = useState(false)
+  const [sessao, setSessao] = useState(null)
+  const [authCarregando, setAuthCarregando] = useState(true)
   const [clientes, setClientes] = useState(carregarClientesIniciais)
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null)
+
+  useEffect(() => {
+    let ativo = true
+
+    async function carregarSessao() {
+      try {
+        const { data } = await supabase.auth.getSession()
+
+        if (!ativo) {
+          return
+        }
+
+        setSessao(data.session ?? null)
+      } finally {
+        if (ativo) {
+          setAuthCarregando(false)
+        }
+      }
+    }
+
+    carregarSessao()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, novaSessao) => {
+      if (!ativo) {
+        return
+      }
+
+      setSessao(novaSessao ?? null)
+      setAuthCarregando(false)
+    })
+
+    return () => {
+      ativo = false
+      subscription.unsubscribe()
+    }
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(CHAVE_CLIENTES, JSON.stringify(clientes))
@@ -191,12 +231,13 @@ function App() {
     window.open(link, '_blank')
   }
 
-  function entrarNoSistema() {
-    setEstaLogado(true)
-  }
+  async function sairDoSistema() {
+    const { error } = await supabase.auth.signOut()
 
-  function sairDoSistema() {
-    setEstaLogado(false)
+    if (error) {
+      return
+    }
+
     setClienteEmEdicao(null)
     setBusca('')
     setStatus('todos')
@@ -235,8 +276,20 @@ function App() {
     return correspondeBusca && correspondeStatus
   })
 
-  if (!estaLogado) {
-    return <Login onEntrar={entrarNoSistema} />
+  if (authCarregando) {
+    return (
+      <div className="auth-loading-shell">
+        <div className="auth-loading-card">
+          <span className="app-kicker">Autenticação</span>
+          <strong>Conectando ao sistema</strong>
+          <p>Verificando sua sessão para liberar o painel.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!sessao) {
+    return <Login />
   }
 
   return (
