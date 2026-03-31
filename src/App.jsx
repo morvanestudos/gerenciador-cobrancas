@@ -8,65 +8,102 @@ import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
 
-const clientesExemplo = [
-  {
-    id: 1,
-    nome: 'Mariana Souza',
-    empresa: 'Studio Aurora',
-    telefone: '(11) 99876-5432',
-    email: 'mariana@studioaurora.com',
-    valor: 'R$ 320,00',
-    vencimento: '05/04/2026',
-    status: 'pendente',
-  },
-  {
-    id: 2,
-    nome: 'Carlos Lima',
-    empresa: 'Lima Reformas',
-    telefone: '(21) 98765-1122',
-    email: 'contato@limareformas.com',
-    valor: 'R$ 780,00',
-    vencimento: '12/04/2026',
-    status: 'pago',
-  },
-  {
-    id: 3,
-    nome: 'Fernanda Alves',
-    empresa: 'Atelie Flor de Sal',
-    telefone: '(31) 99123-4567',
-    email: 'fernanda@flordesal.com',
-    valor: 'R$ 150,00',
-    vencimento: '28/03/2026',
-    status: 'atrasado',
-  },
-]
-
 function formatarVencimento(data) {
-  if (!data || !data.includes('-')) {
+  if (!data) {
+    return ''
+  }
+
+  if (data.includes('/')) {
     return data
   }
 
-  const [ano, mes, dia] = data.split('-')
+  const dataSemHorario = data.split('T')[0]
+
+  if (!dataSemHorario.includes('-')) {
+    return data
+  }
+
+  const [ano, mes, dia] = dataSemHorario.split('-')
 
   return `${dia}/${mes}/${ano}`
 }
 
-function carregarClientesIniciais() {
+function formatarVencimentoParaBanco(data) {
+  if (!data) {
+    return null
+  }
+
+  if (data.includes('/')) {
+    const [dia, mes, ano] = data.split('/')
+
+    return `${ano}-${mes}-${dia}`
+  }
+
+  return data
+}
+
+function normalizarClienteDoBanco(cliente) {
+  return {
+    ...cliente,
+    status: cliente.status ?? 'pendente',
+    vencimento: formatarVencimento(cliente.vencimento),
+  }
+}
+
+function lerClientesLocais() {
   const clientesSalvos = localStorage.getItem(CHAVE_CLIENTES)
 
   if (!clientesSalvos) {
-    return clientesExemplo
+    return []
   }
 
   try {
     const clientesConvertidos = JSON.parse(clientesSalvos)
 
-    return Array.isArray(clientesConvertidos)
-      ? clientesConvertidos
-      : clientesExemplo
+    return Array.isArray(clientesConvertidos) ? clientesConvertidos : []
   } catch {
-    return clientesExemplo
+    return []
   }
+}
+
+async function buscarClientesDoSupabase(userId) {
+  const { data, error } = await supabase
+    .from('clientes')
+    .select('id, user_id, nome, telefone, valor, vencimento, status, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []).map(normalizarClienteDoBanco)
+}
+
+async function migrarClientesLocais(userId) {
+  const clientesLocais = lerClientesLocais()
+
+  if (clientesLocais.length === 0) {
+    return false
+  }
+
+  const clientesParaInserir = clientesLocais.map((cliente) => ({
+    user_id: userId,
+    nome: cliente.nome,
+    telefone: cliente.telefone,
+    valor: cliente.valor,
+    vencimento: formatarVencimentoParaBanco(cliente.vencimento),
+    status: cliente.status ?? 'pendente',
+  }))
+
+  const { error } = await supabase.from('clientes').insert(clientesParaInserir)
+
+  if (error) {
+    throw error
+  }
+
+  localStorage.removeItem(CHAVE_CLIENTES)
+  return true
 }
 
 function gerarLinkWhatsApp(cliente) {
@@ -106,7 +143,9 @@ function App() {
   const [sessao, setSessao] = useState(null)
   const [authCarregando, setAuthCarregando] = useState(true)
   const [telaAuth, setTelaAuth] = useState('login')
-  const [clientes, setClientes] = useState(carregarClientesIniciais)
+  const [clientes, setClientes] = useState([])
+  const [clientesCarregando, setClientesCarregando] = useState(false)
+  const [clientesErro, setClientesErro] = useState('')
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null)
@@ -150,25 +189,72 @@ function App() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(CHAVE_CLIENTES, JSON.stringify(clientes))
-  }, [clientes])
+    if (!sessao?.user?.id) {
+      setClientes([])
+      setClientesErro('')
+      setClientesCarregando(false)
+      return
+    }
 
-  function salvarCliente(dadosCliente) {
+    async function carregarClientesDoUsuario() {
+      setClientesCarregando(true)
+      setClientesErro('')
+
+      try {
+        let clientesCarregados = await buscarClientesDoSupabase(sessao.user.id)
+
+        if (clientesCarregados.length === 0) {
+          const houveMigracao = await migrarClientesLocais(sessao.user.id)
+
+          if (houveMigracao) {
+            clientesCarregados = await buscarClientesDoSupabase(sessao.user.id)
+          }
+        }
+
+        setClientes(clientesCarregados)
+      } catch {
+        setClientes([])
+        setClientesErro('Não foi possível carregar seus clientes no momento.')
+      } finally {
+        setClientesCarregando(false)
+      }
+    }
+
+    carregarClientesDoUsuario()
+  }, [sessao?.user?.id])
+
+  async function salvarCliente(dadosCliente) {
+    if (!sessao?.user?.id) {
+      return
+    }
+
+    setClientesErro('')
+
     if (clienteEmEdicao) {
-      setClientes((clientesAtuais) =>
-        clientesAtuais.map((cliente) => {
-          if (cliente.id !== clienteEmEdicao.id) {
-            return cliente
-          }
+      const { data, error } = await supabase
+        .from('clientes')
+        .update({
+          nome: dadosCliente.nome,
+          telefone: dadosCliente.telefone,
+          valor: dadosCliente.valor,
+          vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
+        })
+        .eq('id', clienteEmEdicao.id)
+        .eq('user_id', sessao.user.id)
+        .select()
+        .single()
 
-          return {
-            ...cliente,
-            nome: dadosCliente.nome,
-            telefone: dadosCliente.telefone,
-            valor: dadosCliente.valor,
-            vencimento: formatarVencimento(dadosCliente.vencimento),
-          }
-        }),
+      if (error) {
+        setClientesErro('Não foi possível atualizar o cliente.')
+        return
+      }
+
+      const clienteAtualizado = normalizarClienteDoBanco(data)
+
+      setClientes((clientesAtuais) =>
+        clientesAtuais.map((cliente) =>
+          cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
+        ),
       )
 
       setClienteEmEdicao(null)
@@ -177,35 +263,66 @@ function App() {
       return
     }
 
-    const novoCliente = {
-      id: Date.now(),
-      nome: dadosCliente.nome,
-      telefone: dadosCliente.telefone,
-      valor: dadosCliente.valor,
-      vencimento: formatarVencimento(dadosCliente.vencimento),
-      status: 'pendente',
+    const { data, error } = await supabase
+      .from('clientes')
+      .insert({
+        user_id: sessao.user.id,
+        nome: dadosCliente.nome,
+        telefone: dadosCliente.telefone,
+        valor: dadosCliente.valor,
+        vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
+        status: 'pendente',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      setClientesErro('Não foi possível salvar o cliente.')
+      return
     }
+
+    const novoCliente = normalizarClienteDoBanco(data)
 
     setClientes((clientesAtuais) => [novoCliente, ...clientesAtuais])
     setBusca('')
     setStatus('todos')
   }
 
-  function toggleStatusCliente(idCliente) {
+  async function toggleStatusCliente(idCliente) {
+    if (!sessao?.user?.id) {
+      return
+    }
+
+    const clienteAtual = clientes.find((cliente) => cliente.id === idCliente)
+
+    if (!clienteAtual) {
+      return
+    }
+
+    const novoStatus =
+      clienteAtual.status === 'pago' ? 'pendente' : 'pago'
+
+    setClientesErro('')
+
+    const { data, error } = await supabase
+      .from('clientes')
+      .update({ status: novoStatus })
+      .eq('id', idCliente)
+      .eq('user_id', sessao.user.id)
+      .select()
+      .single()
+
+    if (error) {
+      setClientesErro('Não foi possível atualizar o status do cliente.')
+      return
+    }
+
+    const clienteAtualizado = normalizarClienteDoBanco(data)
+
     setClientes((clientesAtuais) =>
-      clientesAtuais.map((cliente) => {
-        if (cliente.id !== idCliente) {
-          return cliente
-        }
-
-        const novoStatus =
-          cliente.status === 'pago' ? 'pendente' : 'pago'
-
-        return {
-          ...cliente,
-          status: novoStatus,
-        }
-      }),
+      clientesAtuais.map((cliente) =>
+        cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
+      ),
     )
   }
 
@@ -217,7 +334,24 @@ function App() {
     setClienteEmEdicao(null)
   }
 
-  function deleteCliente(idCliente) {
+  async function deleteCliente(idCliente) {
+    if (!sessao?.user?.id) {
+      return
+    }
+
+    setClientesErro('')
+
+    const { error } = await supabase
+      .from('clientes')
+      .delete()
+      .eq('id', idCliente)
+      .eq('user_id', sessao.user.id)
+
+    if (error) {
+      setClientesErro('Não foi possível excluir o cliente.')
+      return
+    }
+
     setClientes((clientesAtuais) =>
       clientesAtuais.filter((cliente) => cliente.id !== idCliente),
     )
@@ -241,6 +375,8 @@ function App() {
     }
 
     setTelaAuth('login')
+    setClientes([])
+    setClientesErro('')
     setClienteEmEdicao(null)
     setBusca('')
     setStatus('todos')
@@ -331,6 +467,8 @@ function App() {
       </header>
 
       <main className="app-content">
+        {clientesErro && <div className="panel">{clientesErro}</div>}
+
         <section className="dashboard-grid">
           <article className="dashboard-card dashboard-card-receber">
             <span className="dashboard-label">A receber</span>
@@ -366,13 +504,25 @@ function App() {
           />
         </div>
 
-        <ClienteList
-          clientes={clientesFiltrados}
-          onDeleteCliente={deleteCliente}
-          onEditCliente={iniciarEdicaoCliente}
-          onOpenWhatsApp={abrirWhatsAppCliente}
-          onToggleStatus={toggleStatusCliente}
-        />
+        {clientesCarregando ? (
+          <section className="section-block section-block-list">
+            <div className="section-heading">
+              <span className="section-tag">Carteira</span>
+              <h2>Clientes cadastrados</h2>
+              <p>Sincronizando clientes com sua conta.</p>
+            </div>
+
+            <div className="panel">Carregando clientes...</div>
+          </section>
+        ) : (
+          <ClienteList
+            clientes={clientesFiltrados}
+            onDeleteCliente={deleteCliente}
+            onEditCliente={iniciarEdicaoCliente}
+            onOpenWhatsApp={abrirWhatsAppCliente}
+            onToggleStatus={toggleStatusCliente}
+          />
+        )}
       </main>
     </div>
   )
