@@ -67,7 +67,10 @@ function carregarClientesIniciais() {
 }
 
 function gerarLinkWhatsApp(cliente) {
-  const numero = cliente.telefone.replace(/\D/g, '')
+  const numeroLimpo = cliente.telefone.replace(/\D/g, '')
+  const numero = numeroLimpo.startsWith('55')
+    ? numeroLimpo
+    : `55${numeroLimpo}`
   const mensagem = `Ola ${cliente.nome}, tudo bem? Estou entrando em contato sobre a cobranca no valor de ${cliente.valor} com vencimento em ${cliente.vencimento}.`
 
   return `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`
