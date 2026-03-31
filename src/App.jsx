@@ -509,12 +509,22 @@ function App() {
         </div>
 
         <div className="header-side">
-          <div className="header-summary">
-            <span className="summary-label">Base ativa</span>
-            <strong>{clientes.length}</strong>
-            <span className="summary-text">
-              Registros atualizados em tempo real
-            </span>
+          <div className="header-panels">
+            <div className="header-summary">
+              <span className="summary-label">Base ativa</span>
+              <strong>{clientes.length}</strong>
+              <span className="summary-text">
+                Registros atualizados em tempo real
+              </span>
+            </div>
+
+            <div className="plan-usage-card">
+              <span className="summary-label">Uso do plano</span>
+              <span className="plan-usage-value">
+                Plano grátis • {clientes.length} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
+                clientes
+              </span>
+            </div>
           </div>
 
           <button
