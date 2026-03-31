@@ -77,6 +77,7 @@ export default function ClienteForm({
   onCancelarEdicao,
   onSalvarCliente,
   clienteEmEdicao,
+  salvandoCliente,
 }) {
   const [formData, setFormData] = useState(() =>
     criarFormularioInicial(clienteEmEdicao),
@@ -102,17 +103,19 @@ export default function ClienteForm({
     }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
-    onSalvarCliente({
+    const salvouCliente = await onSalvarCliente({
       nome: formData.nome.trim(),
       telefone: formData.telefone.trim(),
       valor: formData.valor.trim(),
       vencimento: formData.vencimento,
     })
 
-    setFormData(criarFormularioInicial(null))
+    if (salvouCliente) {
+      setFormData(criarFormularioInicial(null))
+    }
   }
 
   function handleCancelarEdicao() {
@@ -158,6 +161,7 @@ export default function ClienteForm({
               value={formData.nome}
               onChange={handleChange}
               placeholder="Nome do cliente"
+              disabled={salvandoCliente}
               required
             />
           </div>
@@ -172,6 +176,7 @@ export default function ClienteForm({
               value={formData.telefone}
               onChange={handleChange}
               placeholder="(11) 99999-9999"
+              disabled={salvandoCliente}
               required
             />
           </div>
@@ -186,6 +191,7 @@ export default function ClienteForm({
               value={formData.valor}
               onChange={handleChange}
               placeholder="R$ 0,00"
+              disabled={salvandoCliente}
               required
             />
           </div>
@@ -198,6 +204,7 @@ export default function ClienteForm({
               type="date"
               value={formData.vencimento}
               onChange={handleChange}
+              disabled={salvandoCliente}
               required
             />
           </div>
@@ -209,12 +216,23 @@ export default function ClienteForm({
               type="button"
               className="button button-ghost"
               onClick={handleCancelarEdicao}
+              disabled={salvandoCliente}
             >
               Cancelar
             </button>
           )}
-          <button type="submit" className="button button-primary">
-            {emEdicao ? 'Salvar alterações' : 'Salvar cliente'}
+          <button
+            type="submit"
+            className="button button-primary"
+            disabled={salvandoCliente}
+          >
+            {salvandoCliente
+              ? emEdicao
+                ? 'Salvando alterações...'
+                : 'Salvando cliente...'
+              : emEdicao
+                ? 'Salvar alterações'
+                : 'Salvar cliente'}
           </button>
         </div>
       </form>

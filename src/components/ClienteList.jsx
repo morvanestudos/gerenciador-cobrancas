@@ -2,6 +2,8 @@ import ClienteCard from './ClienteCard.jsx'
 
 export default function ClienteList({
   clientes,
+  clienteExcluindoId,
+  clienteAtualizandoStatusId,
   onDeleteCliente,
   onEditCliente,
   onOpenWhatsApp,
@@ -29,6 +31,8 @@ export default function ClienteList({
             <ClienteCard
               key={cliente.id}
               cliente={cliente}
+              clienteExcluindoId={clienteExcluindoId}
+              clienteAtualizandoStatusId={clienteAtualizandoStatusId}
               onDeleteCliente={onDeleteCliente}
               onEditCliente={onEditCliente}
               onOpenWhatsApp={onOpenWhatsApp}

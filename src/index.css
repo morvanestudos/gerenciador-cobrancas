@@ -342,6 +342,32 @@ select {
   min-width: 120px;
 }
 
+.system-message {
+  padding: 16px 18px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: var(--section-shadow);
+}
+
+.system-message-sucesso {
+  background: linear-gradient(180deg, #eff8f1 0%, #e7f5ea 100%);
+  border-color: #c7e3ce;
+  color: var(--success-text);
+}
+
+.system-message-erro {
+  background: linear-gradient(180deg, #fff5f3 0%, #fdebe8 100%);
+  border-color: #efc4bc;
+  color: var(--danger-text);
+}
+
+.system-message-aviso {
+  background: linear-gradient(180deg, #fff9eb 0%, #fff3d4 100%);
+  border-color: #f1daa0;
+  color: var(--warning-text);
+}
+
 .app-content {
   display: flex;
   flex-direction: column;

@@ -7,6 +7,12 @@ import Cadastro from './components/Cadastro.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
+const LIMITE_CLIENTES_PLANO_GRATIS = 20
+
+const mensagemInicialSistema = {
+  tipo: '',
+  texto: '',
+}
 
 function formatarVencimento(data) {
   if (!data) {
@@ -145,10 +151,17 @@ function App() {
   const [telaAuth, setTelaAuth] = useState('login')
   const [clientes, setClientes] = useState([])
   const [clientesCarregando, setClientesCarregando] = useState(false)
-  const [clientesErro, setClientesErro] = useState('')
+  const [mensagemSistema, setMensagemSistema] = useState(mensagemInicialSistema)
+  const [salvandoCliente, setSalvandoCliente] = useState(false)
+  const [clienteExcluindoId, setClienteExcluindoId] = useState(null)
+  const [clienteAtualizandoStatusId, setClienteAtualizandoStatusId] = useState(null)
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null)
+
+  function mostrarMensagem(tipo, texto) {
+    setMensagemSistema({ tipo, texto })
+  }
 
   useEffect(() => {
     let ativo = true
@@ -191,14 +204,14 @@ function App() {
   useEffect(() => {
     if (!sessao?.user?.id) {
       setClientes([])
-      setClientesErro('')
+      setMensagemSistema(mensagemInicialSistema)
       setClientesCarregando(false)
       return
     }
 
     async function carregarClientesDoUsuario() {
       setClientesCarregando(true)
-      setClientesErro('')
+      setMensagemSistema(mensagemInicialSistema)
 
       try {
         let clientesCarregados = await buscarClientesDoSupabase(sessao.user.id)
@@ -208,13 +221,21 @@ function App() {
 
           if (houveMigracao) {
             clientesCarregados = await buscarClientesDoSupabase(sessao.user.id)
+            setMensagemSistema({
+              tipo: 'sucesso',
+              texto:
+                'Seus clientes anteriores foram importados com sucesso para sua conta.',
+            })
           }
         }
 
         setClientes(clientesCarregados)
       } catch {
         setClientes([])
-        setClientesErro('Não foi possível carregar seus clientes no momento.')
+        setMensagemSistema({
+          tipo: 'erro',
+          texto: 'Não foi possível carregar seus clientes no momento.',
+        })
       } finally {
         setClientesCarregando(false)
       }
@@ -224,72 +245,88 @@ function App() {
   }, [sessao?.user?.id])
 
   async function salvarCliente(dadosCliente) {
-    if (!sessao?.user?.id) {
-      return
+    if (!sessao?.user?.id || salvandoCliente) {
+      return false
     }
 
-    setClientesErro('')
+    if (!clienteEmEdicao && clientes.length >= LIMITE_CLIENTES_PLANO_GRATIS) {
+      mostrarMensagem(
+        'aviso',
+        `Você atingiu o limite de ${LIMITE_CLIENTES_PLANO_GRATIS} clientes do plano grátis. Faça upgrade para continuar cadastrando.`,
+      )
+      return false
+    }
 
-    if (clienteEmEdicao) {
+    setSalvandoCliente(true)
+    setMensagemSistema(mensagemInicialSistema)
+
+    try {
+      if (clienteEmEdicao) {
+        const { data, error } = await supabase
+          .from('clientes')
+          .update({
+            nome: dadosCliente.nome,
+            telefone: dadosCliente.telefone,
+            valor: dadosCliente.valor,
+            vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
+          })
+          .eq('id', clienteEmEdicao.id)
+          .eq('user_id', sessao.user.id)
+          .select()
+          .single()
+
+        if (error) {
+          mostrarMensagem('erro', 'Não foi possível atualizar o cliente.')
+          return false
+        }
+
+        const clienteAtualizado = normalizarClienteDoBanco(data)
+
+        setClientes((clientesAtuais) =>
+          clientesAtuais.map((cliente) =>
+            cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
+          ),
+        )
+
+        setClienteEmEdicao(null)
+        setBusca('')
+        setStatus('todos')
+        mostrarMensagem('sucesso', 'Cliente atualizado com sucesso.')
+        return true
+      }
+
       const { data, error } = await supabase
         .from('clientes')
-        .update({
+        .insert({
+          user_id: sessao.user.id,
           nome: dadosCliente.nome,
           telefone: dadosCliente.telefone,
           valor: dadosCliente.valor,
           vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
+          status: 'pendente',
         })
-        .eq('id', clienteEmEdicao.id)
-        .eq('user_id', sessao.user.id)
         .select()
         .single()
 
       if (error) {
-        setClientesErro('Não foi possível atualizar o cliente.')
-        return
+        mostrarMensagem('erro', 'Não foi possível salvar o cliente.')
+        return false
       }
 
-      const clienteAtualizado = normalizarClienteDoBanco(data)
+      const novoCliente = normalizarClienteDoBanco(data)
 
-      setClientes((clientesAtuais) =>
-        clientesAtuais.map((cliente) =>
-          cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
-        ),
-      )
-
-      setClienteEmEdicao(null)
+      setClientes((clientesAtuais) => [novoCliente, ...clientesAtuais])
       setBusca('')
       setStatus('todos')
-      return
+      mostrarMensagem('sucesso', 'Cliente salvo com sucesso.')
+      return true
+    } finally {
+      setSalvandoCliente(false)
     }
-
-    const { data, error } = await supabase
-      .from('clientes')
-      .insert({
-        user_id: sessao.user.id,
-        nome: dadosCliente.nome,
-        telefone: dadosCliente.telefone,
-        valor: dadosCliente.valor,
-        vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
-        status: 'pendente',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      setClientesErro('Não foi possível salvar o cliente.')
-      return
-    }
-
-    const novoCliente = normalizarClienteDoBanco(data)
-
-    setClientes((clientesAtuais) => [novoCliente, ...clientesAtuais])
-    setBusca('')
-    setStatus('todos')
   }
 
   async function toggleStatusCliente(idCliente) {
-    if (!sessao?.user?.id) {
+    if (!sessao?.user?.id || clienteAtualizandoStatusId === idCliente) {
       return
     }
 
@@ -302,28 +339,37 @@ function App() {
     const novoStatus =
       clienteAtual.status === 'pago' ? 'pendente' : 'pago'
 
-    setClientesErro('')
+    setClienteAtualizandoStatusId(idCliente)
+    setMensagemSistema(mensagemInicialSistema)
 
-    const { data, error } = await supabase
-      .from('clientes')
-      .update({ status: novoStatus })
-      .eq('id', idCliente)
-      .eq('user_id', sessao.user.id)
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .update({ status: novoStatus })
+        .eq('id', idCliente)
+        .eq('user_id', sessao.user.id)
+        .select()
+        .single()
 
-    if (error) {
-      setClientesErro('Não foi possível atualizar o status do cliente.')
-      return
+      if (error) {
+        mostrarMensagem(
+          'erro',
+          'Não foi possível atualizar o status do cliente.',
+        )
+        return
+      }
+
+      const clienteAtualizado = normalizarClienteDoBanco(data)
+
+      setClientes((clientesAtuais) =>
+        clientesAtuais.map((cliente) =>
+          cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
+        ),
+      )
+      mostrarMensagem('sucesso', 'Status do cliente atualizado com sucesso.')
+    } finally {
+      setClienteAtualizandoStatusId(null)
     }
-
-    const clienteAtualizado = normalizarClienteDoBanco(data)
-
-    setClientes((clientesAtuais) =>
-      clientesAtuais.map((cliente) =>
-        cliente.id === clienteAtualizado.id ? clienteAtualizado : cliente,
-      ),
-    )
   }
 
   function iniciarEdicaoCliente(cliente) {
@@ -335,29 +381,44 @@ function App() {
   }
 
   async function deleteCliente(idCliente) {
-    if (!sessao?.user?.id) {
+    if (!sessao?.user?.id || clienteExcluindoId === idCliente) {
       return
     }
 
-    setClientesErro('')
-
-    const { error } = await supabase
-      .from('clientes')
-      .delete()
-      .eq('id', idCliente)
-      .eq('user_id', sessao.user.id)
-
-    if (error) {
-      setClientesErro('Não foi possível excluir o cliente.')
-      return
-    }
-
-    setClientes((clientesAtuais) =>
-      clientesAtuais.filter((cliente) => cliente.id !== idCliente),
+    const confirmouExclusao = window.confirm(
+      'Deseja realmente excluir este cliente? Esta ação não pode ser desfeita.',
     )
 
-    if (clienteEmEdicao?.id === idCliente) {
-      setClienteEmEdicao(null)
+    if (!confirmouExclusao) {
+      return
+    }
+
+    setClienteExcluindoId(idCliente)
+    setMensagemSistema(mensagemInicialSistema)
+
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', idCliente)
+        .eq('user_id', sessao.user.id)
+
+      if (error) {
+        mostrarMensagem('erro', 'Não foi possível excluir o cliente.')
+        return
+      }
+
+      setClientes((clientesAtuais) =>
+        clientesAtuais.filter((cliente) => cliente.id !== idCliente),
+      )
+
+      if (clienteEmEdicao?.id === idCliente) {
+        setClienteEmEdicao(null)
+      }
+
+      mostrarMensagem('sucesso', 'Cliente excluído com sucesso.')
+    } finally {
+      setClienteExcluindoId(null)
     }
   }
 
@@ -376,7 +437,7 @@ function App() {
 
     setTelaAuth('login')
     setClientes([])
-    setClientesErro('')
+    setMensagemSistema(mensagemInicialSistema)
     setClienteEmEdicao(null)
     setBusca('')
     setStatus('todos')
@@ -467,7 +528,11 @@ function App() {
       </header>
 
       <main className="app-content">
-        {clientesErro && <div className="panel">{clientesErro}</div>}
+        {mensagemSistema.texto && (
+          <div className={`system-message system-message-${mensagemSistema.tipo}`}>
+            {mensagemSistema.texto}
+          </div>
+        )}
 
         <section className="dashboard-grid">
           <article className="dashboard-card dashboard-card-receber">
@@ -495,6 +560,7 @@ function App() {
             onCancelarEdicao={cancelarEdicaoCliente}
             onSalvarCliente={salvarCliente}
             clienteEmEdicao={clienteEmEdicao}
+            salvandoCliente={salvandoCliente}
           />
           <Filtros
             busca={busca}
@@ -517,6 +583,8 @@ function App() {
         ) : (
           <ClienteList
             clientes={clientesFiltrados}
+            clienteExcluindoId={clienteExcluindoId}
+            clienteAtualizandoStatusId={clienteAtualizandoStatusId}
             onDeleteCliente={deleteCliente}
             onEditCliente={iniciarEdicaoCliente}
             onOpenWhatsApp={abrirWhatsAppCliente}

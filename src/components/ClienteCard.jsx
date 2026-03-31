@@ -6,6 +6,8 @@ const statusLabel = {
 
 export default function ClienteCard({
   cliente,
+  clienteExcluindoId,
+  clienteAtualizandoStatusId,
   onDeleteCliente,
   onEditCliente,
   onOpenWhatsApp,
@@ -20,6 +22,13 @@ export default function ClienteCard({
     .toUpperCase()
   const textoBotaoStatus =
     cliente.status === 'pago' ? 'Voltar para pendente' : 'Marcar como pago'
+  const estaExcluindo = clienteExcluindoId === cliente.id
+  const estaAtualizandoStatus = clienteAtualizandoStatusId === cliente.id
+  const acoesDesabilitadas = estaExcluindo || estaAtualizandoStatus
+  const textoStatusAcao = estaAtualizandoStatus
+    ? 'Atualizando...'
+    : textoBotaoStatus
+  const textoExcluirAcao = estaExcluindo ? 'Excluindo...' : 'Excluir'
 
   return (
     <article className={`panel cliente-card cliente-card-${cliente.status}`}>
@@ -63,6 +72,7 @@ export default function ClienteCard({
           type="button"
           className="button button-light"
           onClick={() => onEditCliente(cliente)}
+          disabled={acoesDesabilitadas}
         >
           Editar
         </button>
@@ -70,13 +80,15 @@ export default function ClienteCard({
           type="button"
           className="button button-status"
           onClick={() => onToggleStatus(cliente.id)}
+          disabled={acoesDesabilitadas}
         >
-          {textoBotaoStatus}
+          {textoStatusAcao}
         </button>
         <button
           type="button"
           className="button button-whatsapp"
           onClick={() => onOpenWhatsApp(cliente)}
+          disabled={acoesDesabilitadas}
         >
           WhatsApp
         </button>
@@ -84,8 +96,9 @@ export default function ClienteCard({
           type="button"
           className="button button-danger"
           onClick={() => onDeleteCliente(cliente.id)}
+          disabled={acoesDesabilitadas}
         >
-          Excluir
+          {textoExcluirAcao}
         </button>
       </div>
     </article>

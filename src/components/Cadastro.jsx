@@ -23,7 +23,7 @@ function traduzirMensagemErro(mensagem) {
     return 'Informe um e-mail válido para criar a conta.'
   }
 
-  return 'Não foi possível concluir a operação. Tente novamente.'
+  return mensagem
 }
 
 export default function Cadastro({ onVoltarLogin }) {
