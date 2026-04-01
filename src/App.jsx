@@ -6,6 +6,7 @@ import Login from './components/Login.jsx'
 import Cadastro from './components/Cadastro.jsx'
 import RecuperarSenha from './components/RecuperarSenha.jsx'
 import NovaSenha from './components/NovaSenha.jsx'
+import Planos from './components/Planos.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
@@ -173,6 +174,7 @@ function App() {
   const [sessao, setSessao] = useState(null)
   const [authCarregando, setAuthCarregando] = useState(true)
   const [telaAuth, setTelaAuth] = useState('login')
+  const [telaApp, setTelaApp] = useState('painel')
   const [recuperacaoSenhaAtiva, setRecuperacaoSenhaAtiva] = useState(false)
   const [clientes, setClientes] = useState([])
   const [clientesCarregando, setClientesCarregando] = useState(false)
@@ -246,6 +248,7 @@ function App() {
 
   useEffect(() => {
     if (!sessao?.user?.id) {
+      setTelaApp('painel')
       setClientes([])
       setMensagemSistema(mensagemInicialSistema)
       setClientesCarregando(false)
@@ -479,6 +482,7 @@ function App() {
     }
 
     setTelaAuth('login')
+    setTelaApp('painel')
     setRecuperacaoSenhaAtiva(false)
     setClientes([])
     setMensagemSistema(mensagemInicialSistema)
@@ -491,6 +495,7 @@ function App() {
     limparUrlAutenticacao()
     setRecuperacaoSenhaAtiva(false)
     setTelaAuth('login')
+    setTelaApp('painel')
 
     const { error } = await supabase.auth.signOut()
 
@@ -567,6 +572,16 @@ function App() {
     )
   }
 
+  if (telaApp === 'planos') {
+    return (
+      <Planos
+        clientesUsados={clientes.length}
+        limiteClientes={LIMITE_CLIENTES_PLANO_GRATIS}
+        onVoltarPainel={() => setTelaApp('painel')}
+      />
+    )
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -580,31 +595,31 @@ function App() {
         </div>
 
         <div className="header-side">
-          <div className="header-panels">
-            <div className="header-summary">
-              <span className="summary-label">Base ativa</span>
-              <strong>{clientes.length}</strong>
-              <span className="summary-text">
-                Registros atualizados em tempo real
-              </span>
-            </div>
-
-            <div className="plan-usage-card">
-              <span className="summary-label">Uso do plano</span>
-              <span className="plan-usage-value">
-                Plano grátis • {clientes.length} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
-                clientes
-              </span>
-            </div>
+          <div className="plan-usage-card">
+            <span className="summary-label">Uso do plano</span>
+            <span className="plan-usage-value">
+              Plano grátis • {clientes.length} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
+              clientes
+            </span>
           </div>
 
-          <button
-            type="button"
-            className="button button-ghost header-logout"
-            onClick={sairDoSistema}
-          >
-            Sair
-          </button>
+          <div className="header-actions">
+            <button
+              type="button"
+              className="button button-primary header-upgrade"
+              onClick={() => setTelaApp('planos')}
+            >
+              Fazer upgrade
+            </button>
+
+            <button
+              type="button"
+              className="button button-ghost header-logout"
+              onClick={sairDoSistema}
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 

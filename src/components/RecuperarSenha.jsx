@@ -11,6 +11,10 @@ function traduzirMensagemErro(mensagem) {
     return 'Não foi possível enviar o e-mail de recuperação. Tente novamente.'
   }
 
+  if (mensagem.toLowerCase().includes('rate limit')) {
+    return 'Você fez muitas solicitações em pouco tempo. Aguarde alguns segundos e tente novamente.'
+  }
+
   if (mensagem.includes('Unable to validate email address')) {
     return 'Informe um e-mail válido para continuar.'
   }

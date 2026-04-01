@@ -281,9 +281,9 @@ select {
   gap: 14px;
 }
 
-.header-panels {
+.header-actions {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: flex-end;
   gap: 14px;
   flex-wrap: wrap;
@@ -316,18 +316,6 @@ select {
   font-size: 1rem;
 }
 
-.header-summary {
-  min-width: 240px;
-  padding: 22px;
-  border: 1px solid var(--border-strong);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.96);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: var(--shadow-soft);
-}
-
 .summary-label {
   color: var(--muted);
   font-size: 0.88rem;
@@ -336,14 +324,8 @@ select {
   text-transform: uppercase;
 }
 
-.header-summary strong {
-  font-size: 2.9rem;
-  line-height: 1;
-  color: var(--primary-dark);
-}
-
 .plan-usage-card {
-  min-width: 240px;
+  min-width: 280px;
   padding: 22px;
   border: 1px solid var(--border-strong);
   border-radius: 24px;
@@ -362,12 +344,144 @@ select {
   color: var(--primary-deep);
 }
 
-.summary-text {
-  color: var(--muted);
+.header-upgrade {
+  min-width: 170px;
 }
 
 .header-logout {
   min-width: 120px;
+}
+
+.planos-shell {
+  padding-top: 40px;
+}
+
+.planos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(45, 120, 80, 0.12) 0%, transparent 34%),
+    linear-gradient(135deg, #ffffff 0%, #f1f6f2 100%);
+  box-shadow: var(--shadow);
+}
+
+.planos-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planos-header h1 {
+  margin: 10px 0 6px;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.planos-header p {
+  margin: 0;
+  max-width: 620px;
+  color: var(--muted);
+}
+
+.planos-header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.planos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.plano-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(246, 250, 247, 0.98) 100%);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.plano-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7da089, #4f7960);
+}
+
+.plano-card-pro::before {
+  background: linear-gradient(90deg, #2d7850, #245f3b);
+}
+
+.plano-card h2 {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.plano-description {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.plano-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid rgba(184, 201, 188, 0.9);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.plano-highlight strong {
+  font-size: 1.05rem;
+  color: var(--primary-deep);
+}
+
+.plano-highlight span {
+  color: var(--muted);
+}
+
+.plano-highlight-pro {
+  background: linear-gradient(180deg, rgba(232, 241, 235, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-color: rgba(109, 152, 125, 0.45);
+}
+
+.plano-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+  color: var(--text);
+}
+
+.plano-list li::marker {
+  color: var(--primary);
+}
+
+.plano-button-current:disabled {
+  opacity: 1;
+  cursor: default;
 }
 
 .system-message {
@@ -973,19 +1087,28 @@ select {
     align-items: flex-start;
   }
 
-  .header-panels {
+  .header-actions {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .header-summary {
-    width: 100%;
-    max-width: 280px;
-  }
-
   .plan-usage-card {
     width: 100%;
-    max-width: 280px;
+    max-width: 340px;
+  }
+
+  .planos-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .planos-header-side {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .planos-grid {
+    grid-template-columns: 1fr;
   }
 
   .top-grid {
@@ -1049,6 +1172,12 @@ select {
 
   .app-header {
     padding: 22px 20px;
+  }
+
+  .planos-header,
+  .plano-card {
+    padding: 22px 20px;
+    border-radius: 24px;
   }
 
   .dashboard-card {
