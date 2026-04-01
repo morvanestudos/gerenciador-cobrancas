@@ -316,10 +316,7 @@ function App() {
     }
 
     if (!clienteEmEdicao && clientes.length >= LIMITE_CLIENTES_PLANO_GRATIS) {
-      mostrarMensagem(
-        'aviso',
-        `Você atingiu o limite de ${LIMITE_CLIENTES_PLANO_GRATIS} clientes do plano grátis. Faça upgrade para continuar cadastrando.`,
-      )
+      setTelaApp('planos')
       return false
     }
 
@@ -535,10 +532,15 @@ function App() {
   const estaProximoDoLimite =
     !atingiuLimitePlano && percentualUsoPlano >= 70
   const nomeUsuarioExibicao = obterNomeExibicaoUsuario(sessao)
-  const mensagemUsoPlano = atingiuLimitePlano
-    ? 'Limite do plano grátis atingido. Faça upgrade para continuar cadastrando clientes.'
+  const tituloUsoPlano = atingiuLimitePlano
+    ? 'Seu crescimento merece mais espaço'
     : estaProximoDoLimite
-      ? 'Você está próximo do limite do plano grátis.'
+      ? 'Sua carteira está crescendo rápido'
+      : ''
+  const mensagemUsoPlano = atingiuLimitePlano
+    ? 'Você atingiu o limite do plano grátis. Desbloqueie clientes ilimitados para continuar expandindo sua operação sem interrupções.'
+    : estaProximoDoLimite
+      ? 'Você já está usando boa parte do plano grátis. Desbloqueie clientes ilimitados para seguir crescendo com previsibilidade e sem travar novos cadastros.'
       : ''
 
   const totalAReceber = clientes.reduce((total, cliente) => {
@@ -664,7 +666,7 @@ function App() {
               className="button button-primary header-upgrade"
               onClick={() => setTelaApp('planos')}
             >
-              Fazer upgrade
+              Desbloquear clientes ilimitados
             </button>
 
             <button
@@ -687,10 +689,17 @@ function App() {
                 : 'plan-alert-warning'
             }`}
           >
-            <strong>
-              {atingiuLimitePlano ? 'Limite atingido' : 'Atenção ao uso do plano'}
-            </strong>
+            <strong>{tituloUsoPlano}</strong>
             <span>{mensagemUsoPlano}</span>
+            <div className="plan-alert-actions">
+              <button
+                type="button"
+                className="button button-primary plan-alert-button"
+                onClick={() => setTelaApp('planos')}
+              >
+                Desbloquear clientes ilimitados
+              </button>
+            </div>
           </div>
         )}
 

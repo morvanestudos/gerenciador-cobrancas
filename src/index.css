@@ -413,6 +413,16 @@ select {
   color: inherit;
 }
 
+.plan-alert-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.plan-alert-button {
+  min-width: 240px;
+}
+
 .plan-alert-warning {
   background: linear-gradient(180deg, #fff8e7 0%, #fff2cf 100%);
   border-color: #efcf84;
@@ -536,17 +546,21 @@ select {
 }
 
 .plano-card-pro {
-  transform: scale(1.02);
-  border-color: #7cab8b;
+  transform: scale(1.03);
+  border-color: #5f9271;
   background:
     radial-gradient(circle at top right, rgba(45, 120, 80, 0.12) 0%, transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(235, 245, 238, 0.98) 100%);
-  box-shadow: var(--shadow-strong);
+  box-shadow:
+    0 0 0 1px rgba(45, 120, 80, 0.1),
+    0 30px 60px rgba(31, 48, 38, 0.2);
 }
 
 .plano-card-pro:hover {
-  transform: scale(1.02) translateY(-2px);
-  box-shadow: 0 28px 52px rgba(31, 48, 38, 0.18);
+  transform: scale(1.03) translateY(-2px);
+  box-shadow:
+    0 0 0 1px rgba(45, 120, 80, 0.14),
+    0 34px 66px rgba(31, 48, 38, 0.22);
 }
 
 .plano-card h2 {
@@ -1332,6 +1346,10 @@ select {
 
   .header-actions {
     width: 100%;
+  }
+
+  .plan-alert-button {
+    min-width: 0;
   }
 
   .dashboard-card {

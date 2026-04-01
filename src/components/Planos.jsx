@@ -17,9 +17,9 @@ export default function Planos({
   onVoltarPainel,
 }) {
   const mensagemUsoPlano = atingiuLimitePlano
-    ? 'Seu plano grátis chegou ao limite. Faça upgrade para liberar novos cadastros.'
+    ? 'Seu plano grátis chegou ao limite. Ative o Pro para liberar clientes ilimitados e continuar ampliando sua carteira sem bloqueios.'
     : estaProximoDoLimite
-      ? 'Você está próximo do limite do plano grátis.'
+      ? 'Sua operação já está perto do limite atual. Garanta espaço para continuar crescendo com clientes ilimitados.'
       : ''
 
   return (
