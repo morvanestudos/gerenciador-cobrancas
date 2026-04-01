@@ -1,13 +1,16 @@
 const mensagemUpgrade =
-  'Olá, quero fazer upgrade para o plano Pro do sistema de gestão de clientes e cobranças.'
+  'Olá, quero assinar o plano Pro mensal de R$ 14,99 do sistema de gestão de clientes e cobranças.'
+const numeroWhatsAppUpgrade = '5521979033256'
+const precoPlanoPro = 'R$ 14,99/mês'
 
 function abrirWhatsAppUpgrade() {
-  const link = `https://wa.me/?text=${encodeURIComponent(mensagemUpgrade)}`
+  const link = `https://wa.me/${numeroWhatsAppUpgrade}?text=${encodeURIComponent(mensagemUpgrade)}`
 
   window.open(link, '_blank')
 }
 
 export default function Planos({
+  planoUsuario,
   clientesUsados,
   limiteClientes,
   percentualUsoPlano,
@@ -16,11 +19,15 @@ export default function Planos({
   atingiuLimitePlano,
   onVoltarPainel,
 }) {
+  const usuarioPro = planoUsuario === 'pro'
   const mensagemUsoPlano = atingiuLimitePlano
-    ? 'Seu plano grátis chegou ao limite. Ative o Pro para liberar clientes ilimitados e continuar ampliando sua carteira sem bloqueios.'
+    ? `Seu plano grátis chegou ao limite de ${limiteClientes} clientes. Assine o Pro por ${precoPlanoPro} para continuar usando o sistema sem bloqueios.`
     : estaProximoDoLimite
-      ? 'Sua operação já está perto do limite atual. Garanta espaço para continuar crescendo com clientes ilimitados.'
+      ? `Sua operação já está perto do limite de ${limiteClientes} clientes do plano grátis. Garanta mais espaço com o Pro por ${precoPlanoPro}.`
       : ''
+  const resumoPlanoAtual = usuarioPro
+    ? `Plano Pro • ${precoPlanoPro} • Clientes ilimitados`
+    : `Plano grátis • ${clientesUsados} / ${limiteClientes} clientes`
 
   return (
     <div className="app-shell planos-shell">
@@ -30,8 +37,9 @@ export default function Planos({
           <span className="app-kicker">Planos</span>
           <h1>Escolha o plano ideal para sua operação</h1>
           <p>
-            Continue no plano grátis para operações iniciais ou desbloqueie
-            mais capacidade para crescer com liberdade e consistência.
+            Comece com o plano grátis para testar o sistema e evolua para o
+            Pro mensal quando quiser operar com clientes ilimitados e acesso
+            às melhorias futuras.
           </p>
         </div>
 
@@ -45,16 +53,16 @@ export default function Planos({
                   : ''
             }`}
           >
-            <span className="summary-label">Uso do plano</span>
-            <span className="plan-usage-value">
-              Plano grátis • {clientesUsados} / {limiteClientes} clientes
-            </span>
-            <div className="plan-usage-progress" aria-hidden="true">
-              <span
-                className="plan-usage-progress-bar"
-                style={{ width: `${percentualUsoPlano}%` }}
-              />
-            </div>
+            <span className="summary-label">Plano atual</span>
+            <span className="plan-usage-value">{resumoPlanoAtual}</span>
+            {!usuarioPro && (
+              <div className="plan-usage-progress" aria-hidden="true">
+                <span
+                  className="plan-usage-progress-bar"
+                  style={{ width: `${percentualUsoPlano}%` }}
+                />
+              </div>
+            )}
           </div>
 
           {mensagemUsoPlano && (
@@ -87,21 +95,20 @@ export default function Planos({
             </div>
             <h2>Comece com o essencial</h2>
             <p className="plano-description">
-              Ideal para organizar a operação inicial e acompanhar cobranças com
-              agilidade, mantendo visibilidade da carteira e do fluxo de
-              recebimentos.
+              Ideal para testar o sistema, organizar os primeiros clientes e
+              validar sua operação com uma rotina simples e profissional.
             </p>
 
             <div className="plano-highlight">
               <strong>Até {limiteClientes} clientes</strong>
-              <span>Perfeito para validar o processo e começar a operar.</span>
+              <span>Perfeito para testar o sistema antes de escalar.</span>
             </div>
 
             <ul className="plano-list">
-              <li>Até 20 clientes</li>
+              <li>Até {limiteClientes} clientes</li>
               <li>Dashboard básico</li>
               <li>Cobrança por WhatsApp</li>
-              <li>Ideal para começar</li>
+              <li>Ideal para testar o sistema</li>
             </ul>
 
             <button
@@ -109,7 +116,7 @@ export default function Planos({
               className="button button-secondary plano-button-current"
               disabled
             >
-              Plano atual
+              {usuarioPro ? 'Plano disponível' : 'Plano atual'}
             </button>
           </article>
 
@@ -120,31 +127,43 @@ export default function Planos({
             </div>
             <h2>Escale sua gestão com mais liberdade</h2>
             <p className="plano-description">
-              Ideal para operações em crescimento que precisam ampliar a
-              carteira, evitar bloqueios e manter o time focado no avanço do
-              negócio.
+              Um plano mensal pensado para quem quer crescer com consistência,
+              evitar bloqueios no cadastro e acompanhar a evolução do produto.
             </p>
 
             <div className="plano-highlight plano-highlight-pro">
-              <strong>Clientes ilimitados</strong>
-              <span>Mais liberdade para crescer sem travar sua operação.</span>
+              <strong>{precoPlanoPro}</strong>
+              <span>
+                Assinatura mensal com clientes ilimitados e acesso às melhorias
+                futuras.
+              </span>
             </div>
 
             <ul className="plano-list">
+              <li>{precoPlanoPro}</li>
+              <li>Assinatura mensal</li>
               <li>Clientes ilimitados</li>
               <li>Gestão sem limite para acompanhar seu crescimento</li>
-              <li>Acesso prioritário a novos recursos</li>
-              <li>Mais liberdade para expandir sua carteira</li>
-              <li>Experiência mais completa para operar com confiança</li>
+              <li>Acesso às melhorias futuras</li>
             </ul>
 
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={abrirWhatsAppUpgrade}
-            >
-              Desbloquear clientes ilimitados
-            </button>
+            {usuarioPro ? (
+              <button
+                type="button"
+                className="button button-primary plano-button-current"
+                disabled
+              >
+                Plano atual
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={abrirWhatsAppUpgrade}
+              >
+                Assinar Pro por {precoPlanoPro}
+              </button>
+            )}
           </article>
         </section>
       </main>

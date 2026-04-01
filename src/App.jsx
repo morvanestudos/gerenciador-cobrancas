@@ -7,14 +7,19 @@ import Cadastro from './components/Cadastro.jsx'
 import RecuperarSenha from './components/RecuperarSenha.jsx'
 import NovaSenha from './components/NovaSenha.jsx'
 import Planos from './components/Planos.jsx'
+import LandingPage from './components/LandingPage.jsx'
 import { supabase } from './lib/supabase.js'
 
 const CHAVE_CLIENTES = 'gerenciador-cobrancas:clientes'
-const LIMITE_CLIENTES_PLANO_GRATIS = 20
+const LIMITE_CLIENTES_PLANO_GRATIS = 7
 
 const mensagemInicialSistema = {
   tipo: '',
   texto: '',
+}
+
+function normalizarPlano(plano) {
+  return String(plano ?? '').toLowerCase() === 'pro' ? 'pro' : 'gratis'
 }
 
 function formatarVencimento(data) {
@@ -89,6 +94,20 @@ async function buscarClientesDoSupabase(userId) {
   return (data ?? []).map(normalizarClienteDoBanco)
 }
 
+async function buscarPerfilDoSupabase(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, nome_completo, telefone, plano')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 async function migrarClientesLocais(userId) {
   const clientesLocais = lerClientesLocais()
 
@@ -148,8 +167,11 @@ function formatarMoeda(valor) {
   }).format(valor)
 }
 
-function obterNomeExibicaoUsuario(sessao) {
-  const nomeCompleto = sessao?.user?.user_metadata?.nome_completo?.trim() ?? ''
+function obterNomeExibicaoUsuario(sessao, perfilUsuario) {
+  const nomeCompleto =
+    perfilUsuario?.nome_completo?.trim() ??
+    sessao?.user?.user_metadata?.nome_completo?.trim() ??
+    ''
 
   if (nomeCompleto) {
     const [primeiroNome] = nomeCompleto.split(/\s+/)
@@ -193,9 +215,10 @@ function limparUrlAutenticacao() {
 function App() {
   const [sessao, setSessao] = useState(null)
   const [authCarregando, setAuthCarregando] = useState(true)
-  const [telaAuth, setTelaAuth] = useState('login')
+  const [telaAuth, setTelaAuth] = useState('landing')
   const [telaApp, setTelaApp] = useState('painel')
   const [recuperacaoSenhaAtiva, setRecuperacaoSenhaAtiva] = useState(false)
+  const [perfilUsuario, setPerfilUsuario] = useState(null)
   const [clientes, setClientes] = useState([])
   const [clientesCarregando, setClientesCarregando] = useState(false)
   const [mensagemSistema, setMensagemSistema] = useState(mensagemInicialSistema)
@@ -269,6 +292,7 @@ function App() {
   useEffect(() => {
     if (!sessao?.user?.id) {
       setTelaApp('painel')
+      setPerfilUsuario(null)
       setClientes([])
       setMensagemSistema(mensagemInicialSistema)
       setClientesCarregando(false)
@@ -280,7 +304,20 @@ function App() {
       setMensagemSistema(mensagemInicialSistema)
 
       try {
-        let clientesCarregados = await buscarClientesDoSupabase(sessao.user.id)
+        const [perfilResultado, clientesResultado] = await Promise.allSettled([
+          buscarPerfilDoSupabase(sessao.user.id),
+          buscarClientesDoSupabase(sessao.user.id),
+        ])
+
+        setPerfilUsuario(
+          perfilResultado.status === 'fulfilled' ? perfilResultado.value : null,
+        )
+
+        if (clientesResultado.status !== 'fulfilled') {
+          throw clientesResultado.reason
+        }
+
+        let clientesCarregados = clientesResultado.value
 
         if (clientesCarregados.length === 0) {
           const houveMigracao = await migrarClientesLocais(sessao.user.id)
@@ -315,7 +352,11 @@ function App() {
       return false
     }
 
-    if (!clienteEmEdicao && clientes.length >= LIMITE_CLIENTES_PLANO_GRATIS) {
+    if (
+      planoUsuario === 'gratis' &&
+      !clienteEmEdicao &&
+      clientes.length >= LIMITE_CLIENTES_PLANO_GRATIS
+    ) {
       setTelaApp('planos')
       return false
     }
@@ -522,26 +563,38 @@ function App() {
   }
 
   const termoBusca = busca.trim().toLowerCase()
+  const planoUsuario = normalizarPlano(perfilUsuario?.plano)
   const clientesUsados = clientes.length
-  const percentualUsoPlano = Math.min(
-    (clientesUsados / LIMITE_CLIENTES_PLANO_GRATIS) * 100,
-    100,
-  )
+  const percentualUsoPlano =
+    planoUsuario === 'pro'
+      ? 0
+      : Math.min((clientesUsados / LIMITE_CLIENTES_PLANO_GRATIS) * 100, 100)
   const atingiuLimitePlano =
+    planoUsuario === 'gratis' &&
     clientesUsados >= LIMITE_CLIENTES_PLANO_GRATIS
   const estaProximoDoLimite =
-    !atingiuLimitePlano && percentualUsoPlano >= 70
-  const nomeUsuarioExibicao = obterNomeExibicaoUsuario(sessao)
+    planoUsuario === 'gratis' &&
+    !atingiuLimitePlano &&
+    percentualUsoPlano >= 70
+  const nomeUsuarioExibicao = obterNomeExibicaoUsuario(sessao, perfilUsuario)
+  const resumoPlanoTopo =
+    planoUsuario === 'pro'
+      ? 'Plano Pro • R$ 14,99/mês • Clientes ilimitados'
+      : `Plano grátis • ${clientesUsados} / ${LIMITE_CLIENTES_PLANO_GRATIS} clientes`
   const tituloUsoPlano = atingiuLimitePlano
-    ? 'Seu crescimento merece mais espaço'
+    ? 'Seu plano grátis chegou ao limite'
     : estaProximoDoLimite
-      ? 'Sua carteira está crescendo rápido'
+      ? 'Você está perto do limite grátis'
       : ''
   const mensagemUsoPlano = atingiuLimitePlano
-    ? 'Você atingiu o limite do plano grátis. Desbloqueie clientes ilimitados para continuar expandindo sua operação sem interrupções.'
+    ? `Você atingiu o limite de ${LIMITE_CLIENTES_PLANO_GRATIS} clientes do plano grátis. Assine o Pro por R$ 14,99/mês para continuar cadastrando clientes sem limite.`
     : estaProximoDoLimite
-      ? 'Você já está usando boa parte do plano grátis. Desbloqueie clientes ilimitados para seguir crescendo com previsibilidade e sem travar novos cadastros.'
+      ? `Você já está perto do limite de ${LIMITE_CLIENTES_PLANO_GRATIS} clientes do plano grátis. Assine o Pro por R$ 14,99/mês para seguir crescendo sem travar novos cadastros.`
       : ''
+  const textoBotaoPlano =
+    planoUsuario === 'pro'
+      ? 'Ver detalhes do plano'
+      : 'Assinar Pro por R$ 14,99/mês'
 
   const totalAReceber = clientes.reduce((total, cliente) => {
     return cliente.status === 'pendente'
@@ -592,6 +645,15 @@ function App() {
   }
 
   if (!sessao) {
+    if (telaAuth === 'landing') {
+      return (
+        <LandingPage
+          onComecarGratis={() => setTelaAuth('cadastro')}
+          onAbrirLogin={() => setTelaAuth('login')}
+        />
+      )
+    }
+
     if (telaAuth === 'cadastro') {
       return <Cadastro onVoltarLogin={() => setTelaAuth('login')} />
     }
@@ -613,6 +675,7 @@ function App() {
   if (telaApp === 'planos') {
     return (
       <Planos
+        planoUsuario={planoUsuario}
         clientesUsados={clientesUsados}
         limiteClientes={LIMITE_CLIENTES_PLANO_GRATIS}
         percentualUsoPlano={percentualUsoPlano}
@@ -647,17 +710,16 @@ function App() {
                   : ''
             }`}
           >
-            <span className="summary-label">Uso do plano</span>
-            <span className="plan-usage-value">
-              Plano grátis • {clientesUsados} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
-              clientes
-            </span>
-            <div className="plan-usage-progress" aria-hidden="true">
-              <span
-                className="plan-usage-progress-bar"
-                style={{ width: `${percentualUsoPlano}%` }}
-              />
-            </div>
+            <span className="summary-label">Plano atual</span>
+            <span className="plan-usage-value">{resumoPlanoTopo}</span>
+            {planoUsuario === 'gratis' && (
+              <div className="plan-usage-progress" aria-hidden="true">
+                <span
+                  className="plan-usage-progress-bar"
+                  style={{ width: `${percentualUsoPlano}%` }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="header-actions">
@@ -666,7 +728,7 @@ function App() {
               className="button button-primary header-upgrade"
               onClick={() => setTelaApp('planos')}
             >
-              Desbloquear clientes ilimitados
+              {textoBotaoPlano}
             </button>
 
             <button
@@ -697,7 +759,7 @@ function App() {
                 className="button button-primary plan-alert-button"
                 onClick={() => setTelaApp('planos')}
               >
-                Desbloquear clientes ilimitados
+                Assinar Pro por R$ 14,99/mês
               </button>
             </div>
           </div>
