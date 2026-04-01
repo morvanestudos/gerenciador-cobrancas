@@ -148,6 +148,26 @@ function formatarMoeda(valor) {
   }).format(valor)
 }
 
+function obterNomeExibicaoUsuario(sessao) {
+  const nomeCompleto = sessao?.user?.user_metadata?.nome_completo?.trim() ?? ''
+
+  if (nomeCompleto) {
+    const [primeiroNome] = nomeCompleto.split(/\s+/)
+
+    return primeiroNome
+  }
+
+  const emailUsuario = sessao?.user?.email?.trim() ?? ''
+
+  if (!emailUsuario) {
+    return 'Cliente'
+  }
+
+  const identificador = emailUsuario.split('@')[0].replace(/[._-]+/g, ' ')
+
+  return identificador.charAt(0).toUpperCase() + identificador.slice(1)
+}
+
 function urlIndicaRecuperacaoSenha() {
   if (typeof window === 'undefined') {
     return false
@@ -505,6 +525,22 @@ function App() {
   }
 
   const termoBusca = busca.trim().toLowerCase()
+  const clientesUsados = clientes.length
+  const percentualUsoPlano = Math.min(
+    (clientesUsados / LIMITE_CLIENTES_PLANO_GRATIS) * 100,
+    100,
+  )
+  const atingiuLimitePlano =
+    clientesUsados >= LIMITE_CLIENTES_PLANO_GRATIS
+  const estaProximoDoLimite =
+    !atingiuLimitePlano && percentualUsoPlano >= 70
+  const nomeUsuarioExibicao = obterNomeExibicaoUsuario(sessao)
+  const mensagemUsoPlano = atingiuLimitePlano
+    ? 'Limite do plano grátis atingido. Faça upgrade para continuar cadastrando clientes.'
+    : estaProximoDoLimite
+      ? 'Você está próximo do limite do plano grátis.'
+      : ''
+
   const totalAReceber = clientes.reduce((total, cliente) => {
     return cliente.status === 'pendente'
       ? total + converterValorParaNumero(cliente.valor)
@@ -575,8 +611,12 @@ function App() {
   if (telaApp === 'planos') {
     return (
       <Planos
-        clientesUsados={clientes.length}
+        clientesUsados={clientesUsados}
         limiteClientes={LIMITE_CLIENTES_PLANO_GRATIS}
+        percentualUsoPlano={percentualUsoPlano}
+        nomeUsuario={nomeUsuarioExibicao}
+        estaProximoDoLimite={estaProximoDoLimite}
+        atingiuLimitePlano={atingiuLimitePlano}
         onVoltarPainel={() => setTelaApp('painel')}
       />
     )
@@ -586,6 +626,7 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-content">
+          <span className="app-user-greeting">Olá, {nomeUsuarioExibicao} 👋</span>
           <span className="app-kicker">Painel operacional</span>
           <h1>Gestão de Clientes e Cobranças</h1>
           <p>
@@ -595,12 +636,26 @@ function App() {
         </div>
 
         <div className="header-side">
-          <div className="plan-usage-card">
+          <div
+            className={`plan-usage-card ${
+              atingiuLimitePlano
+                ? 'plan-usage-card-critical'
+                : estaProximoDoLimite
+                  ? 'plan-usage-card-warning'
+                  : ''
+            }`}
+          >
             <span className="summary-label">Uso do plano</span>
             <span className="plan-usage-value">
-              Plano grátis • {clientes.length} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
+              Plano grátis • {clientesUsados} / {LIMITE_CLIENTES_PLANO_GRATIS}{' '}
               clientes
             </span>
+            <div className="plan-usage-progress" aria-hidden="true">
+              <span
+                className="plan-usage-progress-bar"
+                style={{ width: `${percentualUsoPlano}%` }}
+              />
+            </div>
           </div>
 
           <div className="header-actions">
@@ -624,6 +679,21 @@ function App() {
       </header>
 
       <main className="app-content">
+        {mensagemUsoPlano && (
+          <div
+            className={`plan-alert ${
+              atingiuLimitePlano
+                ? 'plan-alert-critical'
+                : 'plan-alert-warning'
+            }`}
+          >
+            <strong>
+              {atingiuLimitePlano ? 'Limite atingido' : 'Atenção ao uso do plano'}
+            </strong>
+            <span>{mensagemUsoPlano}</span>
+          </div>
+        )}
+
         {mensagemSistema.texto && (
           <div className={`system-message system-message-${mensagemSistema.tipo}`}>
             {mensagemSistema.texto}

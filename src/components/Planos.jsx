@@ -10,27 +10,64 @@ function abrirWhatsAppUpgrade() {
 export default function Planos({
   clientesUsados,
   limiteClientes,
+  percentualUsoPlano,
+  nomeUsuario,
+  estaProximoDoLimite,
+  atingiuLimitePlano,
   onVoltarPainel,
 }) {
+  const mensagemUsoPlano = atingiuLimitePlano
+    ? 'Seu plano grátis chegou ao limite. Faça upgrade para liberar novos cadastros.'
+    : estaProximoDoLimite
+      ? 'Você está próximo do limite do plano grátis.'
+      : ''
+
   return (
     <div className="app-shell planos-shell">
       <header className="planos-header">
         <div className="planos-header-content">
+          <span className="app-user-greeting">Olá, {nomeUsuario} 👋</span>
           <span className="app-kicker">Planos</span>
           <h1>Escolha o plano ideal para sua operação</h1>
           <p>
-            Comece com o plano grátis e evolua para mais capacidade, mais
-            flexibilidade e uma experiência ainda mais completa.
+            Continue no plano grátis para operações iniciais ou desbloqueie
+            mais capacidade para crescer com liberdade e consistência.
           </p>
         </div>
 
         <div className="planos-header-side">
-          <div className="plan-usage-card">
+          <div
+            className={`plan-usage-card ${
+              atingiuLimitePlano
+                ? 'plan-usage-card-critical'
+                : estaProximoDoLimite
+                  ? 'plan-usage-card-warning'
+                  : ''
+            }`}
+          >
             <span className="summary-label">Uso do plano</span>
             <span className="plan-usage-value">
               Plano grátis • {clientesUsados} / {limiteClientes} clientes
             </span>
+            <div className="plan-usage-progress" aria-hidden="true">
+              <span
+                className="plan-usage-progress-bar"
+                style={{ width: `${percentualUsoPlano}%` }}
+              />
+            </div>
           </div>
+
+          {mensagemUsoPlano && (
+            <div
+              className={`planos-usage-note ${
+                atingiuLimitePlano
+                  ? 'planos-usage-note-critical'
+                  : 'planos-usage-note-warning'
+              }`}
+            >
+              {mensagemUsoPlano}
+            </div>
+          )}
 
           <button
             type="button"
@@ -45,11 +82,14 @@ export default function Planos({
       <main className="app-content">
         <section className="planos-grid">
           <article className="plano-card">
-            <span className="section-tag">Plano grátis</span>
+            <div className="plano-header-row">
+              <span className="section-tag">Plano grátis</span>
+            </div>
             <h2>Comece com o essencial</h2>
             <p className="plano-description">
               Ideal para organizar a operação inicial e acompanhar cobranças com
-              agilidade.
+              agilidade, mantendo visibilidade da carteira e do fluxo de
+              recebimentos.
             </p>
 
             <div className="plano-highlight">
@@ -74,23 +114,28 @@ export default function Planos({
           </article>
 
           <article className="plano-card plano-card-pro">
-            <span className="section-tag">Plano Pro</span>
+            <div className="plano-header-row">
+              <span className="section-tag">Plano Pro</span>
+              <span className="plano-badge-popular">Mais escolhido</span>
+            </div>
             <h2>Escale sua gestão com mais liberdade</h2>
             <p className="plano-description">
-              Ganhe espaço para crescer sem limites e tenha acesso prioritário
-              às próximas evoluções do produto.
+              Ideal para operações em crescimento que precisam ampliar a
+              carteira, evitar bloqueios e manter o time focado no avanço do
+              negócio.
             </p>
 
             <div className="plano-highlight plano-highlight-pro">
               <strong>Clientes ilimitados</strong>
-              <span>Mais capacidade para expandir sua carteira com confiança.</span>
+              <span>Mais liberdade para crescer sem travar sua operação.</span>
             </div>
 
             <ul className="plano-list">
               <li>Clientes ilimitados</li>
-              <li>Gestão sem limite</li>
+              <li>Gestão sem limite para acompanhar seu crescimento</li>
               <li>Acesso prioritário a novos recursos</li>
-              <li>Experiência mais completa</li>
+              <li>Mais liberdade para expandir sua carteira</li>
+              <li>Experiência mais completa para operar com confiança</li>
             </ul>
 
             <button
@@ -98,7 +143,7 @@ export default function Planos({
               className="button button-primary"
               onClick={abrirWhatsAppUpgrade}
             >
-              Quero fazer upgrade
+              Desbloquear clientes ilimitados
             </button>
           </article>
         </section>
