@@ -34,7 +34,6 @@ export default function Planos({
       <header className="planos-header">
         <div className="planos-header-content">
           <span className="app-user-greeting">Olá, {nomeUsuario} 👋</span>
-          <span className="app-kicker">Planos</span>
           <h1>Escolha o plano ideal para sua operação</h1>
           <p>
             Comece com o plano grátis para testar o sistema e evolua para o
@@ -90,9 +89,6 @@ export default function Planos({
       <main className="app-content">
         <section className="planos-grid">
           <article className="plano-card">
-            <div className="plano-header-row">
-              <span className="section-tag">Plano grátis</span>
-            </div>
             <h2>Comece com o essencial</h2>
             <p className="plano-description">
               Ideal para testar o sistema, organizar os primeiros clientes e
@@ -122,7 +118,6 @@ export default function Planos({
 
           <article className="plano-card plano-card-pro">
             <div className="plano-header-row">
-              <span className="section-tag">Plano Pro</span>
               <span className="plano-badge-popular">Mais escolhido</span>
             </div>
             <h2>Escale sua gestão com mais liberdade</h2>

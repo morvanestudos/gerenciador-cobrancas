@@ -78,7 +78,6 @@ export default function Login({ onAbrirCadastro, onAbrirRecuperacao }) {
     <div className="login-shell">
       <div className="login-layout">
         <section className="login-brand-panel">
-          <span className="app-kicker">Acesso ao sistema</span>
           <h1>Gestão de Clientes e Cobranças</h1>
           <p>
             Organize sua carteira, acompanhe recebimentos e acelere cobranças
@@ -105,7 +104,6 @@ export default function Login({ onAbrirCadastro, onAbrirRecuperacao }) {
 
         <form className="login-card" onSubmit={handleSubmit} noValidate>
           <div className="login-card-header">
-            <span className="section-tag">Login</span>
             <h2>Entrar no painel</h2>
             <p>Informe seus dados para acessar o sistema.</p>
           </div>

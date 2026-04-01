@@ -1,6 +1,7 @@
 const numeroWhatsAppComercial = '5521979033256'
 const mensagemWhatsAppComercial =
   'Olá, quero conhecer o sistema de gestão de clientes e cobranças.'
+const valorPlanoPro = 'R$ 14,99/mês'
 
 const dores = [
   {
@@ -103,7 +104,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
       <div className="landing-container">
         <header className="landing-header">
           <div className="landing-brand">
-            <span className="app-kicker">SaaS de cobrança</span>
             <strong>Gestão de Clientes e Cobranças</strong>
           </div>
 
@@ -134,11 +134,10 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                 </span>
               </div>
 
-              <h1>Organize clientes, cobranças e mensagens em um só lugar</h1>
+              <h1>Organize seus clientes e cobre pelo WhatsApp sem perder dinheiro</h1>
               <p>
-                Um sistema simples e profissional para acompanhar pagamentos,
-                cobrar mais rápido pelo WhatsApp e ter clareza do seu financeiro
-                sem depender de planilhas improvisadas.
+                Controle quem pagou, quem está devendo e envie cobranças em
+                segundos.
               </p>
 
               <div className="landing-hero-actions">
@@ -168,7 +167,7 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                   <span>Abra o WhatsApp com mensagem pronta para agilizar o contato.</span>
                 </article>
                 <article className="landing-proof-card">
-                  <strong>R$ 14,99/mês no Pro</strong>
+                  <strong>{valorPlanoPro} no Pro</strong>
                   <span>Clientes ilimitados e acesso às próximas melhorias.</span>
                 </article>
               </div>
@@ -214,7 +213,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section">
             <div className="landing-section-heading">
-              <span className="section-tag">Confiança</span>
               <h2>Uma solução pensada para cobrar com mais clareza e mais segurança</h2>
               <p>
                 A proposta do produto é simples: reduzir improviso, organizar a
@@ -234,7 +232,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section">
             <div className="landing-section-heading">
-              <span className="section-tag">Problema</span>
               <h2>Cobrar clientes no manual gera atraso, retrabalho e falta de controle</h2>
               <p>
                 Quando a operação depende de memória, papel, caderno ou planilha
@@ -255,7 +252,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section landing-solution-section">
             <div className="landing-section-heading">
-              <span className="section-tag">Solução</span>
               <h2>O sistema centraliza clientes, cobranças e contato em um fluxo simples</h2>
               <p>
                 Em vez de correr atrás das informações, você acompanha tudo em
@@ -286,7 +282,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section" id="beneficios">
             <div className="landing-section-heading">
-              <span className="section-tag">Benefícios</span>
               <h2>Mais clareza, mais agilidade e mais controle no dia a dia</h2>
               <p>
                 O produto foi desenhado para ajudar quem precisa vender, cobrar
@@ -306,7 +301,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section landing-objection-section">
             <div className="landing-section-heading">
-              <span className="section-tag">Por que vale a pena</span>
               <h2>Menos dúvidas para decidir e mais clareza sobre o valor do produto</h2>
               <p>
                 A ferramenta ajuda a organizar cobranças desde o começo e o Pro
@@ -335,7 +329,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section" id="planos">
             <div className="landing-section-heading">
-              <span className="section-tag">Planos</span>
               <h2>Comece grátis e evolua para o mensal quando precisar de mais escala</h2>
               <p>
                 Você pode testar o sistema com segurança e migrar para o Pro
@@ -345,7 +338,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
             <div className="landing-plans-grid">
               <article className="landing-plan-card">
-                <span className="section-tag">Plano grátis</span>
                 <h3>Ideal para testar o sistema</h3>
                 <div className="landing-plan-price">
                   <strong>R$ 0</strong>
@@ -372,7 +364,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
               <article className="landing-plan-card landing-plan-card-pro">
                 <div className="landing-plan-header">
-                  <span className="section-tag">Plano Pro</span>
                   <span className="landing-plan-badge">Mais escolhido</span>
                 </div>
                 <h3>Mais liberdade para crescer sem travar a operação</h3>
@@ -383,8 +374,12 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                 <p>
                   Uma assinatura mensal acessível para quem quer clientes
                   ilimitados, continuidade na operação e acesso às melhorias
-                  futuras do produto.
+                  futuras do produto, sem deixar a rotina travar quando a
+                  carteira começar a crescer.
                 </p>
+                <div className="landing-plan-urgency">
+                  Não deixe sua operação travar quando mais precisa crescer.
+                </div>
                 <ul className="landing-plan-list">
                   <li>Clientes ilimitados</li>
                   <li>Assinatura mensal</li>
@@ -399,7 +394,7 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                   className="button button-primary"
                   onClick={abrirWhatsAppComercial}
                 >
-                  Assinar Pro por R$ 14,99/mês
+                  Desbloquear clientes ilimitados por R$ 14,99/mês
                 </button>
               </article>
             </div>
@@ -407,7 +402,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section" id="faq">
             <div className="landing-section-heading">
-              <span className="section-tag">FAQ</span>
               <h2>Perguntas comuns antes de começar</h2>
               <p>
                 Respostas rápidas para ajudar você a entender como o produto
@@ -427,7 +421,6 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-final-cta">
             <div className="landing-final-copy">
-              <span className="section-tag">Comece agora</span>
               <h2>Teste grátis, organize sua cobrança e evolua para o Pro quando quiser</h2>
               <p>
                 Comece com até 7 clientes grátis e, quando sua operação pedir
@@ -453,6 +446,16 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
             </div>
           </section>
         </main>
+      </div>
+
+      <div className="landing-mobile-cta">
+        <button
+          type="button"
+          className="button button-primary landing-mobile-cta-button"
+          onClick={onComecarGratis}
+        >
+          Começar grátis
+        </button>
       </div>
     </div>
   )

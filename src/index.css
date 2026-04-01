@@ -341,13 +341,13 @@ select {
 }
 
 .landing-hero-copy {
-  padding: 38px;
+  padding: 42px;
   background:
     radial-gradient(circle at top right, rgba(45, 120, 80, 0.12) 0%, transparent 32%),
     linear-gradient(135deg, #ffffff 0%, #f1f7f3 100%);
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
 }
 
 .landing-pill-row {
@@ -375,18 +375,18 @@ select {
 
 .landing-hero-copy h1 {
   margin: 0;
-  max-width: 680px;
-  font-size: clamp(2.6rem, 5vw, 4.7rem);
-  line-height: 0.98;
+  max-width: 760px;
+  font-size: clamp(2.8rem, 5.2vw, 5rem);
+  line-height: 0.95;
   letter-spacing: -0.05em;
 }
 
 .landing-hero-copy p {
   margin: 0;
-  max-width: 620px;
+  max-width: 560px;
   color: var(--muted);
-  font-size: 1.04rem;
-  line-height: 1.7;
+  font-size: 1.08rem;
+  line-height: 1.65;
 }
 
 .landing-hero-actions {
@@ -722,14 +722,14 @@ select {
 }
 
 .landing-plan-card-pro {
-  transform: scale(1.02);
-  border-color: #5f9271;
+  transform: scale(1.035);
+  border-color: #4f8762;
   background:
     radial-gradient(circle at top right, rgba(45, 120, 80, 0.12) 0%, transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(235, 245, 238, 0.98) 100%);
   box-shadow:
-    0 0 0 1px rgba(45, 120, 80, 0.1),
-    0 30px 60px rgba(31, 48, 38, 0.18);
+    0 0 0 1px rgba(45, 120, 80, 0.14),
+    0 34px 70px rgba(31, 48, 38, 0.2);
 }
 
 .landing-plan-header {
@@ -785,10 +785,24 @@ select {
   color: var(--primary);
 }
 
+.landing-plan-urgency {
+  padding: 14px 16px;
+  border: 1px solid rgba(95, 146, 113, 0.45);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--primary-deep);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .landing-plan-footnote {
   color: var(--primary-dark);
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.landing-mobile-cta {
+  display: none;
 }
 
 .landing-faq-grid {
@@ -1942,6 +1956,10 @@ select {
     padding-inline: 16px;
   }
 
+  .landing-shell {
+    padding-bottom: 112px;
+  }
+
   .landing-header,
   .auth-loading-card,
   .login-brand-panel,
@@ -1959,7 +1977,7 @@ select {
   }
 
   .landing-hero-copy h1 {
-    font-size: 2.4rem;
+    font-size: 2.55rem;
   }
 
   .landing-section-heading h2,
@@ -1995,6 +2013,24 @@ select {
   .landing-cta-main,
   .landing-cta-whatsapp {
     width: 100%;
+  }
+
+  .landing-mobile-cta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: block;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(237, 242, 238, 0) 0%, rgba(237, 242, 238, 0.96) 28%, rgba(237, 242, 238, 0.99) 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  .landing-mobile-cta-button {
+    width: 100%;
+    min-height: 52px;
+    box-shadow: 0 16px 30px rgba(36, 95, 59, 0.24);
   }
 
   .app-shell {

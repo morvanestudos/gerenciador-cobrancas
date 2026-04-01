@@ -2,7 +2,6 @@ export default function Filtros({ busca, onBuscaChange, status, onStatusChange }
   return (
     <section className="section-block section-block-filters">
       <div className="section-heading">
-        <span className="section-tag">Filtros</span>
         <h2>Localizar clientes</h2>
         <p>Pesquise e refine a carteira em tempo real.</p>
       </div>

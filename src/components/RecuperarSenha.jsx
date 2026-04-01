@@ -79,7 +79,6 @@ export default function RecuperarSenha({ onVoltarLogin }) {
     <div className="login-shell">
       <div className="login-layout">
         <section className="login-brand-panel">
-          <span className="app-kicker">Recuperação de acesso</span>
           <h1>Recupere sua senha com segurança</h1>
           <p>
             Informe o e-mail da sua conta para receber as instruções de
@@ -106,7 +105,6 @@ export default function RecuperarSenha({ onVoltarLogin }) {
 
         <form className="login-card" onSubmit={handleSubmit} noValidate>
           <div className="login-card-header">
-            <span className="section-tag">Recuperação</span>
             <h2>Redefinir senha</h2>
             <p>Digite seu e-mail para receber o link de recuperação.</p>
           </div>

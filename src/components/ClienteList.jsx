@@ -13,7 +13,6 @@ export default function ClienteList({
     <section className="section-block section-block-list">
       <div className="section-heading section-heading-inline">
         <div>
-          <span className="section-tag">Carteira</span>
           <h2>Clientes cadastrados</h2>
           <p>Acompanhe status, cobranças e ações rápidas em um só lugar.</p>
         </div>

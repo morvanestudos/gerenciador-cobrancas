@@ -103,7 +103,6 @@ export default function Cadastro({ onVoltarLogin }) {
     <div className="login-shell">
       <div className="login-layout">
         <section className="login-brand-panel">
-          <span className="app-kicker">Nova conta</span>
           <h1>Crie seu acesso ao sistema</h1>
           <p>
             Configure sua conta para acompanhar clientes, cobranças e ações
@@ -130,7 +129,6 @@ export default function Cadastro({ onVoltarLogin }) {
 
         <form className="login-card" onSubmit={handleSubmit} noValidate>
           <div className="login-card-header">
-            <span className="section-tag">Cadastro</span>
             <h2>Criar nova conta</h2>
             <p>Preencha seus dados para começar a usar o sistema.</p>
           </div>

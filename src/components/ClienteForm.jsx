@@ -130,7 +130,6 @@ export default function ClienteForm({
       }`}
     >
       <div className="section-heading">
-        <span className="section-tag">Cadastro</span>
         <h2>{emEdicao ? 'Atualizar cliente' : 'Novo cliente'}</h2>
         <p>
           {emEdicao

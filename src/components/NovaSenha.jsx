@@ -96,7 +96,6 @@ export default function NovaSenha({ onSenhaAtualizada }) {
     <div className="login-shell">
       <div className="login-layout">
         <section className="login-brand-panel">
-          <span className="app-kicker">Nova senha</span>
           <h1>Defina uma nova senha para sua conta</h1>
           <p>
             Atualize seu acesso com uma nova senha e volte ao painel com
@@ -123,7 +122,6 @@ export default function NovaSenha({ onSenhaAtualizada }) {
 
         <form className="login-card" onSubmit={handleSubmit} noValidate>
           <div className="login-card-header">
-            <span className="section-tag">Segurança</span>
             <h2>Criar nova senha</h2>
             <p>Informe e confirme sua nova senha para finalizar a recuperação.</p>
           </div>

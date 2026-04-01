@@ -632,7 +632,6 @@ function App() {
     return (
       <div className="auth-loading-shell">
         <div className="auth-loading-card">
-          <span className="app-kicker">Autenticação</span>
           <strong>Conectando ao sistema</strong>
           <p>Verificando sua sessão para liberar o painel.</p>
         </div>
@@ -692,7 +691,6 @@ function App() {
       <header className="app-header">
         <div className="app-header-content">
           <span className="app-user-greeting">Olá, {nomeUsuarioExibicao} 👋</span>
-          <span className="app-kicker">Painel operacional</span>
           <h1>Gestão de Clientes e Cobranças</h1>
           <p>
             Centralize clientes, acompanhe recebimentos e acelere cobranças com
@@ -810,7 +808,6 @@ function App() {
         {clientesCarregando ? (
           <section className="section-block section-block-list">
             <div className="section-heading">
-              <span className="section-tag">Carteira</span>
               <h2>Clientes cadastrados</h2>
               <p>Sincronizando clientes com sua conta.</p>
             </div>
