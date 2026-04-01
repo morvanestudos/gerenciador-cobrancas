@@ -39,6 +39,58 @@ const beneficios = [
   },
 ]
 
+const provaSocial = [
+  'Feito para quem precisa cobrar com mais organização e menos improviso.',
+  'Simples para começar no plano grátis e sólido para crescer no Pro.',
+  'Contato comercial direto no WhatsApp para tirar dúvidas sem burocracia.',
+]
+
+const objecoes = [
+  {
+    titulo: 'Organize cobranças sem depender de planilhas soltas',
+    texto:
+      'O sistema centraliza clientes, vencimentos e status de pagamento para reduzir retrabalho e dar mais clareza no dia a dia.',
+  },
+  {
+    titulo: 'O plano Pro evita travar o crescimento da sua operação',
+    texto:
+      'Quando sua carteira aumenta, você continua cadastrando clientes normalmente e mantém a cobrança rodando sem bloqueios.',
+  },
+  {
+    titulo: 'R$ 14,99/mês é um investimento baixo para ganhar controle',
+    texto:
+      'Menos que o custo de uma cobrança perdida e muito mais previsibilidade para acompanhar recebimentos.',
+  },
+]
+
+const faqs = [
+  {
+    pergunta: 'O plano grátis tem limite?',
+    resposta:
+      'Sim. O plano grátis permite cadastrar até 7 clientes para você testar o sistema e validar sua rotina de cobrança.',
+  },
+  {
+    pergunta: 'O que acontece quando eu atingir o limite?',
+    resposta:
+      'Você continua acessando seus dados normalmente, mas para cadastrar novos clientes precisa migrar para o plano Pro.',
+  },
+  {
+    pergunta: 'Como funciona o plano Pro?',
+    resposta:
+      'O plano Pro custa R$ 14,99 por mês, libera clientes ilimitados e dá acesso às melhorias futuras do produto.',
+  },
+  {
+    pergunta: 'Posso falar direto no WhatsApp?',
+    resposta:
+      'Sim. A landing e a tela de planos possuem botão direto para você abrir conversa comercial no WhatsApp.',
+  },
+  {
+    pergunta: 'O sistema funciona no celular?',
+    resposta:
+      'Sim. A interface é responsiva e foi pensada para funcionar bem tanto no desktop quanto no celular.',
+  },
+]
+
 function abrirWhatsAppComercial() {
   const link = `https://wa.me/${numeroWhatsAppComercial}?text=${encodeURIComponent(mensagemWhatsAppComercial)}`
 
@@ -162,6 +214,26 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-section">
             <div className="landing-section-heading">
+              <span className="section-tag">Confiança</span>
+              <h2>Uma solução pensada para cobrar com mais clareza e mais segurança</h2>
+              <p>
+                A proposta do produto é simples: reduzir improviso, organizar a
+                rotina e facilitar o crescimento da sua carteira.
+              </p>
+            </div>
+
+            <div className="landing-social-grid">
+              {provaSocial.map((frase) => (
+                <article key={frase} className="landing-social-card">
+                  <span className="landing-social-mark">Confiança</span>
+                  <p>{frase}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="landing-section">
+            <div className="landing-section-heading">
               <span className="section-tag">Problema</span>
               <h2>Cobrar clientes no manual gera atraso, retrabalho e falta de controle</h2>
               <p>
@@ -232,6 +304,35 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
             </div>
           </section>
 
+          <section className="landing-section landing-objection-section">
+            <div className="landing-section-heading">
+              <span className="section-tag">Por que vale a pena</span>
+              <h2>Menos dúvidas para decidir e mais clareza sobre o valor do produto</h2>
+              <p>
+                A ferramenta ajuda a organizar cobranças desde o começo e o Pro
+                entra como um passo natural para não limitar o crescimento.
+              </p>
+            </div>
+
+            <div className="landing-objection-grid">
+              {objecoes.map((item) => (
+                <article key={item.titulo} className="landing-objection-card">
+                  <strong>{item.titulo}</strong>
+                  <p>{item.texto}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="landing-objection-highlight">
+              <span className="landing-objection-price">R$ 14,99/mês</span>
+              <strong>Menos que o custo de uma cobrança perdida</strong>
+              <p>
+                Um valor mensal acessível para manter clientes ilimitados e sua
+                operação organizada conforme ela cresce.
+              </p>
+            </div>
+          </section>
+
           <section className="landing-section" id="planos">
             <div className="landing-section-heading">
               <span className="section-tag">Planos</span>
@@ -290,6 +391,9 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                   <li>Rotina sem bloqueios de crescimento</li>
                   <li>Acesso às melhorias futuras</li>
                 </ul>
+                <span className="landing-plan-footnote">
+                  Menos que o custo de uma cobrança perdida.
+                </span>
                 <button
                   type="button"
                   className="button button-primary"
@@ -298,6 +402,26 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                   Assinar Pro por R$ 14,99/mês
                 </button>
               </article>
+            </div>
+          </section>
+
+          <section className="landing-section" id="faq">
+            <div className="landing-section-heading">
+              <span className="section-tag">FAQ</span>
+              <h2>Perguntas comuns antes de começar</h2>
+              <p>
+                Respostas rápidas para ajudar você a entender como o produto
+                funciona e qual plano faz mais sentido para sua operação.
+              </p>
+            </div>
+
+            <div className="landing-faq-grid">
+              {faqs.map((item) => (
+                <details key={item.pergunta} className="landing-faq-item">
+                  <summary>{item.pergunta}</summary>
+                  <p>{item.resposta}</p>
+                </details>
+              ))}
             </div>
           </section>
 
