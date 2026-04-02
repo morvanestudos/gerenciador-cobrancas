@@ -56,11 +56,71 @@ function formatarVencimentoParaBanco(data) {
   return data
 }
 
+function normalizarDataParaComparacao(data) {
+  if (!data) {
+    return ''
+  }
+
+  if (data.includes('/')) {
+    const [dia, mes, ano] = data.split('/')
+
+    if (!ano || !mes || !dia) {
+      return ''
+    }
+
+    return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
+  }
+
+  const dataSemHorario = data.split('T')[0]
+
+  if (!dataSemHorario.includes('-')) {
+    return ''
+  }
+
+  const [ano, mes, dia] = dataSemHorario.split('-')
+
+  if (!ano || !mes || !dia) {
+    return ''
+  }
+
+  return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
+}
+
+function obterDataAtualParaComparacao() {
+  const hoje = new Date()
+  const ano = hoje.getFullYear()
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+  const dia = String(hoje.getDate()).padStart(2, '0')
+
+  return `${ano}-${mes}-${dia}`
+}
+
+function obterStatusRealCliente(cliente) {
+  if (cliente?.status === 'pago') {
+    return 'pago'
+  }
+
+  const vencimento = normalizarDataParaComparacao(cliente?.vencimento)
+
+  if (!vencimento) {
+    return 'pendente'
+  }
+
+  return vencimento < obterDataAtualParaComparacao()
+    ? 'atrasado'
+    : 'pendente'
+}
+
 function normalizarClienteDoBanco(cliente) {
+  const vencimentoFormatado = formatarVencimento(cliente.vencimento)
+
   return {
     ...cliente,
-    status: cliente.status ?? 'pendente',
-    vencimento: formatarVencimento(cliente.vencimento),
+    status: obterStatusRealCliente({
+      ...cliente,
+      vencimento: vencimentoFormatado,
+    }),
+    vencimento: vencimentoFormatado,
   }
 }
 
@@ -121,7 +181,7 @@ async function migrarClientesLocais(userId) {
     telefone: cliente.telefone,
     valor: cliente.valor,
     vencimento: formatarVencimentoParaBanco(cliente.vencimento),
-    status: cliente.status ?? 'pendente',
+    status: obterStatusRealCliente(cliente),
   }))
 
   const { error } = await supabase.from('clientes').insert(clientesParaInserir)
@@ -366,6 +426,11 @@ function App() {
 
     try {
       if (clienteEmEdicao) {
+        const statusAtualizado = obterStatusRealCliente({
+          status: clienteEmEdicao.status,
+          vencimento: dadosCliente.vencimento,
+        })
+
         const { data, error } = await supabase
           .from('clientes')
           .update({
@@ -373,6 +438,7 @@ function App() {
             telefone: dadosCliente.telefone,
             valor: dadosCliente.valor,
             vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
+            status: statusAtualizado,
           })
           .eq('id', clienteEmEdicao.id)
           .eq('user_id', sessao.user.id)
@@ -407,7 +473,9 @@ function App() {
           telefone: dadosCliente.telefone,
           valor: dadosCliente.valor,
           vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
-          status: 'pendente',
+          status: obterStatusRealCliente({
+            vencimento: dadosCliente.vencimento,
+          }),
         })
         .select()
         .single()
@@ -441,7 +509,9 @@ function App() {
     }
 
     const novoStatus =
-      clienteAtual.status === 'pago' ? 'pendente' : 'pago'
+      clienteAtual.status === 'pago'
+        ? obterStatusRealCliente({ vencimento: clienteAtual.vencimento })
+        : 'pago'
 
     setClienteAtualizandoStatusId(idCliente)
     setMensagemSistema(mensagemInicialSistema)
@@ -597,7 +667,7 @@ function App() {
       : 'Assinar Pro por R$ 14,99/mês'
 
   const totalAReceber = clientes.reduce((total, cliente) => {
-    return cliente.status === 'pendente'
+    return cliente.status !== 'pago'
       ? total + converterValorParaNumero(cliente.valor)
       : total
   }, 0)
@@ -773,7 +843,7 @@ function App() {
           <article className="dashboard-card dashboard-card-receber">
             <span className="dashboard-label">A receber</span>
             <strong>{formatarMoeda(totalAReceber)}</strong>
-            <p>Cobranças com status pendente.</p>
+            <p>Cobranças pendentes e atrasadas.</p>
           </article>
 
           <article className="dashboard-card dashboard-card-recebido">
