@@ -95,6 +95,98 @@ function obterDataAtualParaComparacao() {
   return `${ano}-${mes}-${dia}`
 }
 
+function obterQuantidadeDiasNoMes(ano, mes) {
+  return new Date(Date.UTC(ano, mes, 0)).getUTCDate()
+}
+
+function formatarDataComparacao(ano, mes, dia) {
+  const diaAjustado = String(dia).padStart(2, '0')
+  const mesAjustado = String(mes).padStart(2, '0')
+
+  return `${ano}-${mesAjustado}-${diaAjustado}`
+}
+
+function calcularProximoVencimentoRecorrente(
+  diaVencimento,
+  dataAtualComparacao = obterDataAtualParaComparacao(),
+) {
+  const diaConvertido = Number(diaVencimento)
+
+  if (
+    !Number.isInteger(diaConvertido) ||
+    diaConvertido < 1 ||
+    diaConvertido > 31
+  ) {
+    return null
+  }
+
+  const [anoAtual, mesAtual] = dataAtualComparacao.split('-').map(Number)
+
+  if (!anoAtual || !mesAtual) {
+    return null
+  }
+
+  const ultimoDiaMesAtual = obterQuantidadeDiasNoMes(anoAtual, mesAtual)
+  const diaNoMesAtual = Math.min(diaConvertido, ultimoDiaMesAtual)
+  const vencimentoMesAtual = formatarDataComparacao(
+    anoAtual,
+    mesAtual,
+    diaNoMesAtual,
+  )
+
+  if (vencimentoMesAtual >= dataAtualComparacao) {
+    return vencimentoMesAtual
+  }
+
+  const proximoMes = mesAtual === 12 ? 1 : mesAtual + 1
+  const proximoAno = mesAtual === 12 ? anoAtual + 1 : anoAtual
+  const ultimoDiaProximoMes = obterQuantidadeDiasNoMes(proximoAno, proximoMes)
+  const diaNoProximoMes = Math.min(diaConvertido, ultimoDiaProximoMes)
+
+  return formatarDataComparacao(proximoAno, proximoMes, diaNoProximoMes)
+}
+
+function prepararAtualizacaoRecorrenciaCliente(
+  cliente,
+  dataAtualComparacao = obterDataAtualParaComparacao(),
+) {
+  const vencimentoAtual = normalizarDataParaComparacao(cliente?.vencimento)
+
+  if (
+    !cliente?.recorrente ||
+    !vencimentoAtual ||
+    vencimentoAtual >= dataAtualComparacao
+  ) {
+    return {
+      atualizado: false,
+      cliente,
+    }
+  }
+
+  const proximoVencimento = calcularProximoVencimentoRecorrente(
+    cliente.dia_vencimento,
+    dataAtualComparacao,
+  )
+
+  if (!proximoVencimento || proximoVencimento === vencimentoAtual) {
+    return {
+      atualizado: false,
+      cliente,
+    }
+  }
+
+  return {
+    atualizado: true,
+    cliente: {
+      ...cliente,
+      vencimento: proximoVencimento,
+      status: obterStatusRealCliente({
+        vencimento: proximoVencimento,
+      }),
+    },
+  }
+}
+
 function obterStatusRealCliente(cliente) {
   if (cliente?.status === 'pago') {
     return 'pago'
@@ -112,15 +204,17 @@ function obterStatusRealCliente(cliente) {
 }
 
 function normalizarClienteDoBanco(cliente) {
-  const vencimentoFormatado = formatarVencimento(cliente.vencimento)
+  const { cliente: clienteAtualizado } =
+    prepararAtualizacaoRecorrenciaCliente(cliente)
+  const vencimentoFormatado = formatarVencimento(clienteAtualizado.vencimento)
 
   return {
-    ...cliente,
-    recorrente: Boolean(cliente.recorrente),
-    periodicidade: cliente.periodicidade ?? null,
-    dia_vencimento: cliente.dia_vencimento ?? null,
+    ...clienteAtualizado,
+    recorrente: Boolean(clienteAtualizado.recorrente),
+    periodicidade: clienteAtualizado.periodicidade ?? null,
+    dia_vencimento: clienteAtualizado.dia_vencimento ?? null,
     status: obterStatusRealCliente({
-      ...cliente,
+      ...clienteAtualizado,
       vencimento: vencimentoFormatado,
     }),
     vencimento: vencimentoFormatado,
@@ -156,7 +250,39 @@ async function buscarClientesDoSupabase(userId) {
     throw error
   }
 
-  return (data ?? []).map(normalizarClienteDoBanco)
+  const dataAtualComparacao = obterDataAtualParaComparacao()
+  const clientesSincronizados = await Promise.all(
+    (data ?? []).map(async (cliente) => {
+      const { atualizado, cliente: clienteAtualizado } =
+        prepararAtualizacaoRecorrenciaCliente(cliente, dataAtualComparacao)
+
+      if (!atualizado) {
+        return cliente
+      }
+
+      const { data: clientePersistido, error: errorAtualizacao } =
+        await supabase
+          .from('clientes')
+          .update({
+            vencimento: formatarVencimentoParaBanco(clienteAtualizado.vencimento),
+            status: clienteAtualizado.status,
+          })
+          .eq('id', cliente.id)
+          .eq('user_id', userId)
+          .select()
+          .single()
+
+      if (errorAtualizacao) {
+        return clienteAtualizado
+      }
+
+      return clientePersistido
+    }),
+  )
+
+  return clientesSincronizados.map((cliente) =>
+    normalizarClienteDoBanco(cliente),
+  )
 }
 
 async function buscarPerfilDoSupabase(userId) {
