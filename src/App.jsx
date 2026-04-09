@@ -203,6 +203,25 @@ function obterStatusRealCliente(cliente) {
     : 'pendente'
 }
 
+function clienteVenceHoje(
+  cliente,
+  dataAtualComparacao = obterDataAtualParaComparacao(),
+) {
+  if (cliente?.status === 'pago') {
+    return false
+  }
+
+  return normalizarDataParaComparacao(cliente?.vencimento) === dataAtualComparacao
+}
+
+function clienteEstaAtrasado(cliente) {
+  if (cliente?.status === 'pago') {
+    return false
+  }
+
+  return obterStatusRealCliente(cliente) === 'atrasado'
+}
+
 function normalizarClienteDoBanco(cliente) {
   const { cliente: clienteAtualizado } =
     prepararAtualizacaoRecorrenciaCliente(cliente)
@@ -805,6 +824,37 @@ function App() {
     planoUsuario === 'pro'
       ? 'Ver detalhes do plano'
       : 'Assinar Pro por R$ 14,99/mês'
+  const dataAtualComparacao = obterDataAtualParaComparacao()
+  const clientesVencendoHoje = clientes.filter((cliente) =>
+    clienteVenceHoje(cliente, dataAtualComparacao),
+  )
+  const clientesAtrasados = clientes.filter((cliente) =>
+    clienteEstaAtrasado(cliente),
+  )
+  const alertasPainel = [
+    clientesVencendoHoje.length > 0
+      ? {
+          chave: 'vencem-hoje',
+          tipo: 'hoje',
+          titulo: 'Vencimentos de hoje',
+          texto:
+            clientesVencendoHoje.length === 1
+              ? '1 cliente vence hoje'
+              : `${clientesVencendoHoje.length} clientes vencem hoje`,
+        }
+      : null,
+    clientesAtrasados.length > 0
+      ? {
+          chave: 'atrasados',
+          tipo: 'atrasado',
+          titulo: 'Cobranças em atraso',
+          texto:
+            clientesAtrasados.length === 1
+              ? '1 cliente está atrasado'
+              : `${clientesAtrasados.length} clientes estão atrasados`,
+        }
+      : null,
+  ].filter(Boolean)
 
   const totalAReceber = clientes.reduce((total, cliente) => {
     return cliente.status !== 'pago'
@@ -977,6 +1027,20 @@ function App() {
           <div className={`system-message system-message-${mensagemSistema.tipo}`}>
             {mensagemSistema.texto}
           </div>
+        )}
+
+        {alertasPainel.length > 0 && (
+          <section className="smart-alerts" aria-label="Alertas do painel">
+            {alertasPainel.map((alerta) => (
+              <article
+                key={alerta.chave}
+                className={`smart-alert smart-alert-${alerta.tipo}`}
+              >
+                <span className="smart-alert-label">{alerta.titulo}</span>
+                <strong>{alerta.texto}</strong>
+              </article>
+            ))}
+          </section>
         )}
 
         <section className="dashboard-grid">
