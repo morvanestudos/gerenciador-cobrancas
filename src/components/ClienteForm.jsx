@@ -5,6 +5,41 @@ const formularioInicial = {
   telefone: '',
   valor: '',
   vencimento: '',
+  recorrente: false,
+  dia_vencimento: '',
+}
+
+const grupoRecorrenciaStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  gridColumn: '1 / -1',
+}
+
+const tituloGrupoStyle = {
+  fontSize: '0.95rem',
+  fontWeight: 700,
+}
+
+const opcaoRecorrenciaStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px 14px',
+  border: '1px solid var(--border)',
+  borderRadius: '14px',
+  background: '#fcfdfb',
+  color: 'var(--text)',
+  cursor: 'pointer',
+}
+
+const checkboxRecorrenciaStyle = {
+  width: '18px',
+  height: '18px',
+  margin: 0,
+  flexShrink: 0,
+  accentColor: '#6aa581',
+  cursor: 'pointer',
 }
 
 function formatarTelefone(valor) {
@@ -70,6 +105,11 @@ function criarFormularioInicial(clienteEmEdicao) {
     telefone: formatarTelefone(clienteEmEdicao.telefone ?? ''),
     valor: formatarValorMoeda(clienteEmEdicao.valor ?? ''),
     vencimento: formatarVencimentoParaInput(clienteEmEdicao.vencimento),
+    recorrente: Boolean(clienteEmEdicao.recorrente),
+    dia_vencimento:
+      clienteEmEdicao.dia_vencimento != null
+        ? String(clienteEmEdicao.dia_vencimento)
+        : '',
   }
 }
 
@@ -86,7 +126,16 @@ export default function ClienteForm({
   const nomeClienteEmEdicao = clienteEmEdicao?.nome ?? ''
 
   function handleChange(event) {
-    const { name, value } = event.target
+    const { name, type, value, checked } = event.target
+
+    if (type === 'checkbox') {
+      setFormData((dadosAtuais) => ({
+        ...dadosAtuais,
+        [name]: checked,
+      }))
+      return
+    }
+
     let valorFormatado = value
 
     if (name === 'telefone') {
@@ -95,6 +144,10 @@ export default function ClienteForm({
 
     if (name === 'valor') {
       valorFormatado = formatarValorMoeda(value)
+    }
+
+    if (name === 'dia_vencimento') {
+      valorFormatado = value.replace(/\D/g, '').slice(0, 2)
     }
 
     setFormData((dadosAtuais) => ({
@@ -111,6 +164,11 @@ export default function ClienteForm({
       telefone: formData.telefone.trim(),
       valor: formData.valor.trim(),
       vencimento: formData.vencimento,
+      recorrente: formData.recorrente,
+      periodicidade: formData.recorrente ? 'mensal' : null,
+      dia_vencimento: formData.recorrente
+        ? Number(formData.dia_vencimento)
+        : null,
     })
 
     if (salvouCliente) {
@@ -207,6 +265,42 @@ export default function ClienteForm({
               required
             />
           </div>
+
+          <div style={grupoRecorrenciaStyle}>
+            <span style={tituloGrupoStyle}>Recorrência</span>
+            <label htmlFor="recorrente" style={opcaoRecorrenciaStyle}>
+              <input
+                id="recorrente"
+                name="recorrente"
+                type="checkbox"
+                checked={formData.recorrente}
+                onChange={handleChange}
+                disabled={salvandoCliente}
+                style={checkboxRecorrenciaStyle}
+              />
+              <span>Cobrança recorrente mensal</span>
+            </label>
+          </div>
+
+          {formData.recorrente && (
+            <div className="field">
+              <label htmlFor="dia_vencimento">Dia do vencimento</label>
+              <input
+                id="dia_vencimento"
+                name="dia_vencimento"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                max="31"
+                step="1"
+                value={formData.dia_vencimento}
+                onChange={handleChange}
+                placeholder="Ex.: 10"
+                disabled={salvandoCliente}
+                required={formData.recorrente}
+              />
+            </div>
+          )}
         </div>
 
         <div className="form-actions">

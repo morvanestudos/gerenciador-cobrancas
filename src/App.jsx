@@ -116,6 +116,9 @@ function normalizarClienteDoBanco(cliente) {
 
   return {
     ...cliente,
+    recorrente: Boolean(cliente.recorrente),
+    periodicidade: cliente.periodicidade ?? null,
+    dia_vencimento: cliente.dia_vencimento ?? null,
     status: obterStatusRealCliente({
       ...cliente,
       vencimento: vencimentoFormatado,
@@ -143,7 +146,9 @@ function lerClientesLocais() {
 async function buscarClientesDoSupabase(userId) {
   const { data, error } = await supabase
     .from('clientes')
-    .select('id, user_id, nome, telefone, valor, vencimento, status, created_at')
+    .select(
+      'id, user_id, nome, telefone, valor, vencimento, status, recorrente, periodicidade, dia_vencimento, created_at',
+    )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -182,6 +187,9 @@ async function migrarClientesLocais(userId) {
     valor: cliente.valor,
     vencimento: formatarVencimentoParaBanco(cliente.vencimento),
     status: obterStatusRealCliente(cliente),
+    recorrente: Boolean(cliente.recorrente),
+    periodicidade: cliente.periodicidade ?? null,
+    dia_vencimento: cliente.dia_vencimento ?? null,
   }))
 
   const { error } = await supabase.from('clientes').insert(clientesParaInserir)
@@ -439,6 +447,9 @@ function App() {
             valor: dadosCliente.valor,
             vencimento: formatarVencimentoParaBanco(dadosCliente.vencimento),
             status: statusAtualizado,
+            recorrente: dadosCliente.recorrente,
+            periodicidade: dadosCliente.periodicidade,
+            dia_vencimento: dadosCliente.dia_vencimento,
           })
           .eq('id', clienteEmEdicao.id)
           .eq('user_id', sessao.user.id)
@@ -476,6 +487,9 @@ function App() {
           status: obterStatusRealCliente({
             vencimento: dadosCliente.vencimento,
           }),
+          recorrente: dadosCliente.recorrente,
+          periodicidade: dadosCliente.periodicidade,
+          dia_vencimento: dadosCliente.dia_vencimento,
         })
         .select()
         .single()
