@@ -1,5 +1,7 @@
 :root {
   --bg: #0f172a;
+  --surface: #111827;
+  --surface-2: #1e293b;
   --bg-soft: #0b1220;
   --card: #111827;
   --card-light: #1f2937;
@@ -20,9 +22,32 @@
   --muted-strong: #cbd5e1;
   --border: #334155;
   --ring: rgba(59, 130, 246, 0.24);
+  --surface-strong: var(--surface);
+  --surface-soft: rgba(17, 24, 39, 0.84);
+  --border-strong: rgba(148, 163, 184, 0.24);
+  --primary-dark: #60a5fa;
+  --primary-deep: #f8fafc;
+  --primary-ring: rgba(59, 130, 246, 0.18);
+  --warning-bg: rgba(245, 158, 11, 0.14);
+  --warning-text: #fde68a;
+  --success-bg: rgba(34, 197, 94, 0.14);
+  --success-text: #bbf7d0;
+  --danger-bg: rgba(239, 68, 68, 0.14);
+  --danger-text: #fecaca;
+  --danger-border: rgba(248, 113, 113, 0.24);
+  --whatsapp: #22c55e;
+  --whatsapp-dark: #16a34a;
+  --radius-sm: 16px;
+  --radius-md: 22px;
+  --radius-lg: 28px;
+  --radius-xl: 34px;
+  --radius-pill: 999px;
   --shadow-premium: 0 28px 80px rgba(2, 6, 23, 0.5);
   --shadow-card: 0 22px 50px rgba(2, 6, 23, 0.34);
   --shadow-soft: 0 16px 32px rgba(2, 6, 23, 0.22);
+  --shadow-strong: var(--shadow-premium);
+  --section-shadow: var(--shadow-card);
+  --shadow: var(--shadow-card);
 
   color-scheme: dark;
   font-family: 'Aptos', 'Segoe UI Variable Text', 'Segoe UI', sans-serif;
@@ -30,6 +55,9 @@
   font-weight: 400;
   color: var(--text);
   background: var(--bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -48,6 +76,7 @@ body {
   background:
     radial-gradient(circle at top left, rgba(59, 130, 246, 0.16) 0%, transparent 28%),
     radial-gradient(circle at top right, rgba(14, 165, 233, 0.14) 0%, transparent 26%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(2, 6, 23, 0.98) 100%),
     radial-gradient(circle at bottom center, rgba(30, 41, 59, 0.62) 0%, transparent 38%),
     linear-gradient(180deg, #020617 0%, #0b1120 32%, #0f172a 100%);
 }
@@ -105,6 +134,19 @@ body::after {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+}
+
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+  background-size: 88px 88px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 82%);
 }
 
 h1,
@@ -171,10 +213,15 @@ a {
 .smart-alert {
   border: 1px solid var(--card-border);
   background:
-    linear-gradient(180deg, rgba(31, 41, 55, 0.82) 0%, rgba(15, 23, 42, 0.92) 100%),
-    linear-gradient(135deg, rgba(59, 130, 246, 0.08), transparent 36%);
+    linear-gradient(180deg, rgba(17, 24, 39, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%),
+    linear-gradient(135deg, rgba(59, 130, 246, 0.06), transparent 38%);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(20px);
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
 }
 
 .auth-loading-card,
@@ -350,12 +397,27 @@ a {
 }
 
 .landing-shell {
+  overflow: hidden;
   padding: 24px 24px 72px;
+}
+
+.landing-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 520px;
+  background:
+    radial-gradient(circle at top center, rgba(59, 130, 246, 0.18) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .landing-container {
   width: min(1280px, 100%);
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .landing-header {
@@ -370,7 +432,8 @@ a {
   justify-content: space-between;
   gap: 20px;
   background:
-    linear-gradient(180deg, rgba(17, 24, 39, 0.88) 0%, rgba(15, 23, 42, 0.82) 100%);
+    linear-gradient(180deg, rgba(9, 14, 28, 0.88) 0%, rgba(15, 23, 42, 0.8) 100%);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.22);
 }
 
 .landing-brand {
@@ -452,6 +515,10 @@ a {
   padding: 34px;
   border-radius: 34px;
   gap: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16) 0%, transparent 28%),
+    radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.1) 0%, transparent 22%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(15, 23, 42, 0.94) 100%);
 }
 
 .landing-hero-copy,
@@ -519,6 +586,8 @@ a {
 .landing-proof-card {
   padding: 20px;
   border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.9) 100%);
 }
 
 .landing-proof-card strong,
@@ -659,6 +728,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: premiumFadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .landing-section-heading {
@@ -832,6 +902,9 @@ a {
   gap: 24px;
   padding: 32px;
   border-radius: 32px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0%, transparent 30%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.96) 100%);
 }
 
 .landing-mobile-cta {
@@ -845,6 +918,20 @@ a {
   padding: 30px 0 64px;
 }
 
+.app-shell::before,
+.planos-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 260px;
+  border-radius: 36px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16) 0%, transparent 34%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.14) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .app-header,
 .planos-header {
   display: grid;
@@ -852,6 +939,7 @@ a {
   gap: 28px;
   padding: 32px;
   border-radius: 34px;
+  animation: premiumFadeUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .app-header-content,
@@ -914,7 +1002,7 @@ a {
   border-radius: 24px;
   border: 1px solid rgba(96, 165, 250, 0.16);
   background:
-    linear-gradient(180deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.9) 100%);
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.84) 100%);
   box-shadow: var(--shadow-soft);
 }
 
@@ -1020,6 +1108,9 @@ a {
   min-height: 190px;
   padding: 24px;
   border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.9) 100%);
+  animation: premiumFadeUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .dashboard-card::before {
@@ -1078,6 +1169,9 @@ a {
 .section-block {
   padding: 24px;
   border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.82) 100%);
+  animation: premiumFadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .section-block::before {
@@ -1108,6 +1202,8 @@ a {
 .panel {
   padding: 22px;
   border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(2, 6, 23, 0.82) 100%);
 }
 
 .form-panel {
@@ -1159,10 +1255,21 @@ a {
   background: rgba(15, 23, 42, 0.86);
   color: var(--text);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
 }
 
 .field input::placeholder {
   color: rgba(148, 163, 184, 0.82);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: rgba(96, 165, 250, 0.36);
+  background: rgba(15, 23, 42, 0.94);
 }
 
 .field input:focus,
@@ -1276,6 +1383,8 @@ a {
   padding: 24px;
   border-radius: 26px;
   overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.86) 100%);
 }
 
 .cliente-card::before {
@@ -1368,6 +1477,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: rgba(15, 23, 42, 0.66);
 }
 
 .detail-row strong {
@@ -1453,7 +1563,7 @@ a {
   position: relative;
   min-height: 52px;
   border-radius: 16px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   padding: 13px 18px;
   font-weight: 800;
   letter-spacing: 0.01em;
@@ -1536,7 +1646,7 @@ a {
 
 .button-whatsapp {
   border-color: rgba(34, 197, 94, 0.24);
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.82) 0%, rgba(22, 163, 74, 0.96) 100%);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.72) 0%, rgba(21, 128, 61, 0.94) 100%);
 }
 
 .button-danger {
@@ -1550,6 +1660,44 @@ a {
 .button-status:hover,
 .button-danger:hover {
   border-color: rgba(96, 165, 250, 0.26);
+}
+
+.landing-cta-main,
+.header-upgrade,
+.plan-alert-button {
+  min-width: 220px;
+  padding-inline: 22px;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.26);
+}
+
+.landing-cta-secondary,
+.landing-cta-whatsapp,
+.header-logout {
+  min-width: 188px;
+}
+
+.dashboard-grid .dashboard-card:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.dashboard-grid .dashboard-card:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.top-grid .section-block:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+@keyframes premiumFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1180px) {
