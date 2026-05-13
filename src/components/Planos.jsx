@@ -1,12 +1,26 @@
-const mensagemUpgrade =
-  'Olá, quero assinar o plano Pro mensal de R$ 14,99 do sistema de gestão de clientes e cobranças.'
-const numeroWhatsAppUpgrade = '5521979033256'
+const linkMercadoPago = 'https://mpago.la/1rRbcR8'
 const precoPlanoPro = 'R$ 14,99/mês'
 
-function abrirWhatsAppUpgrade() {
-  const link = `https://wa.me/${numeroWhatsAppUpgrade}?text=${encodeURIComponent(mensagemUpgrade)}`
+function abrirPagamentoPro() {
+  try {
+    const urlPagamento = new URL(linkMercadoPago)
 
-  window.open(link, '_blank')
+    if (!['http:', 'https:'].includes(urlPagamento.protocol)) {
+      return
+    }
+
+    const novaAba = window.open(
+      urlPagamento.toString(),
+      '_blank',
+      'noopener,noreferrer'
+    )
+
+    if (novaAba) {
+      novaAba.opener = null
+    }
+  } catch {
+    console.error('Link de pagamento do Plano Pro invalido.')
+  }
 }
 
 export default function Planos({
@@ -151,13 +165,18 @@ export default function Planos({
                 Plano atual
               </button>
             ) : (
-              <button
-                type="button"
-                className="button button-primary"
-                onClick={abrirWhatsAppUpgrade}
-              >
-                Assinar Pro por {precoPlanoPro}
-              </button>
+              <div className="plano-action">
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={abrirPagamentoPro}
+                >
+                  Assinar Pro por {precoPlanoPro}
+                </button>
+                <p className="plano-payment-note">
+                  Pagamento seguro via Mercado Pago
+                </p>
+              </div>
             )}
           </article>
         </section>

@@ -1276,6 +1276,19 @@ select {
   color: var(--primary);
 }
 
+.plano-action {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plano-payment-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .plano-button-current:disabled {
   opacity: 1;
   cursor: default;
