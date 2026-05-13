@@ -6,34 +6,6 @@ const prioridadeStatus = {
   pago: 2,
 }
 
-const destaqueAtrasadoStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-  height: '100%',
-  padding: '12px',
-  border: '1px solid rgba(203, 85, 64, 0.32)',
-  borderRadius: '28px',
-  background: 'rgba(255, 247, 245, 0.8)',
-  boxShadow: '0 16px 32px rgba(203, 85, 64, 0.08)',
-}
-
-const seloAtrasadoStyle = {
-  alignSelf: 'flex-end',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '6px 10px',
-  borderRadius: '999px',
-  border: '1px solid rgba(203, 85, 64, 0.18)',
-  background: 'rgba(203, 85, 64, 0.12)',
-  color: '#9f2f1d',
-  fontSize: '0.74rem',
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-}
-
 function normalizarVencimentoParaComparacao(data) {
   if (!data) {
     return ''
@@ -122,8 +94,11 @@ export default function ClienteList({
             }
 
             return (
-              <div key={cliente.id} style={destaqueAtrasadoStyle}>
-                <span style={seloAtrasadoStyle}>Em atraso</span>
+              <div
+                key={cliente.id}
+                className="cliente-list-highlight cliente-list-highlight-atrasado"
+              >
+                <span className="cliente-list-highlight-badge">Em atraso</span>
                 <ClienteCard {...cardProps} />
               </div>
             )

@@ -9,39 +9,6 @@ const formularioInicial = {
   dia_vencimento: '',
 }
 
-const grupoRecorrenciaStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-  gridColumn: '1 / -1',
-}
-
-const tituloGrupoStyle = {
-  fontSize: '0.95rem',
-  fontWeight: 700,
-}
-
-const opcaoRecorrenciaStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '12px 14px',
-  border: '1px solid var(--border)',
-  borderRadius: '14px',
-  background: '#fcfdfb',
-  color: 'var(--text)',
-  cursor: 'pointer',
-}
-
-const checkboxRecorrenciaStyle = {
-  width: '18px',
-  height: '18px',
-  margin: 0,
-  flexShrink: 0,
-  accentColor: '#6aa581',
-  cursor: 'pointer',
-}
-
 function formatarTelefone(valor) {
   const numeros = valor.replace(/\D/g, '').slice(0, 11)
 
@@ -266,9 +233,9 @@ export default function ClienteForm({
             />
           </div>
 
-          <div style={grupoRecorrenciaStyle}>
-            <span style={tituloGrupoStyle}>Recorrência</span>
-            <label htmlFor="recorrente" style={opcaoRecorrenciaStyle}>
+          <div className="recurrence-group">
+            <span className="recurrence-title">Recorrência</span>
+            <label htmlFor="recorrente" className="recurrence-option">
               <input
                 id="recorrente"
                 name="recorrente"
@@ -276,7 +243,7 @@ export default function ClienteForm({
                 checked={formData.recorrente}
                 onChange={handleChange}
                 disabled={salvandoCliente}
-                style={checkboxRecorrenciaStyle}
+                className="recurrence-checkbox"
               />
               <span>Cobrança recorrente mensal</span>
             </label>
