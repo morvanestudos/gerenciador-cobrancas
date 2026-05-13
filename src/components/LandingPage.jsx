@@ -1,6 +1,7 @@
-const numeroWhatsAppComercial = '5521979033256'
-const mensagemWhatsAppComercial =
-  'Olá, quero conhecer o sistema de gestão de clientes e cobranças.'
+const linkMercadoPago = 'https://mpago.la/1rRbcR8'
+const numeroWhatsAppSuporte = '5521979033256'
+const mensagemWhatsAppSuporte =
+  'Olá, tenho uma dúvida sobre o plano Pro do sistema.'
 const valorPlanoPro = 'R$ 14,99/mês'
 
 const dores = [
@@ -43,7 +44,7 @@ const beneficios = [
 const provaSocial = [
   'Feito para quem precisa cobrar com mais organização e menos improviso.',
   'Simples para começar no plano grátis e sólido para crescer no Pro.',
-  'Contato comercial direto no WhatsApp para tirar dúvidas sem burocracia.',
+  'Suporte direto no WhatsApp para tirar dúvidas sobre o plano Pro.',
 ]
 
 const objecoes = [
@@ -83,7 +84,7 @@ const faqs = [
   {
     pergunta: 'Posso falar direto no WhatsApp?',
     resposta:
-      'Sim. A landing e a tela de planos possuem botão direto para você abrir conversa comercial no WhatsApp.',
+      'Sim. O WhatsApp da landing funciona como canal de suporte para dúvidas sobre o plano Pro e sobre o sistema.',
   },
   {
     pergunta: 'O sistema funciona no celular?',
@@ -92,10 +93,36 @@ const faqs = [
   },
 ]
 
-function abrirWhatsAppComercial() {
-  const link = `https://wa.me/${numeroWhatsAppComercial}?text=${encodeURIComponent(mensagemWhatsAppComercial)}`
+function abrirLinkExterno(url) {
+  try {
+    const urlExterna = new URL(url)
 
-  window.open(link, '_blank')
+    if (!['http:', 'https:'].includes(urlExterna.protocol)) {
+      return
+    }
+
+    const novaAba = window.open(
+      urlExterna.toString(),
+      '_blank',
+      'noopener,noreferrer'
+    )
+
+    if (novaAba) {
+      novaAba.opener = null
+    }
+  } catch {
+    console.error('Link externo invalido.')
+  }
+}
+
+function abrirPagamentoPro() {
+  abrirLinkExterno(linkMercadoPago)
+}
+
+function abrirWhatsAppSuporte() {
+  const link = `https://wa.me/${numeroWhatsAppSuporte}?text=${encodeURIComponent(mensagemWhatsAppSuporte)}`
+
+  abrirLinkExterno(link)
 }
 
 export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
@@ -137,13 +164,26 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
               <h1>Organize seus clientes e cobre pelo WhatsApp sem perder dinheiro</h1>
               <p>
                 Controle quem pagou, quem está devendo e envie cobranças em
-                segundos.
+                segundos. Se quiser já operar sem limite de clientes, assine o
+                Pro por {valorPlanoPro} com pagamento seguro via Mercado Pago.
               </p>
 
               <div className="landing-hero-actions">
+                <div className="landing-action-stack">
+                  <button
+                    type="button"
+                    className="button button-primary landing-cta-main"
+                    onClick={abrirPagamentoPro}
+                  >
+                    Assinar Pro por {valorPlanoPro}
+                  </button>
+                  <p className="landing-payment-note">
+                    Pagamento seguro via Mercado Pago
+                  </p>
+                </div>
                 <button
                   type="button"
-                  className="button button-primary landing-cta-main"
+                  className="button button-secondary landing-cta-secondary"
                   onClick={onComecarGratis}
                 >
                   Começar grátis
@@ -151,9 +191,9 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                 <button
                   type="button"
                   className="button button-whatsapp landing-cta-whatsapp"
-                  onClick={abrirWhatsAppComercial}
+                  onClick={abrirWhatsAppSuporte}
                 >
-                  Falar no WhatsApp
+                  Falar com suporte no WhatsApp
                 </button>
               </div>
 
@@ -389,13 +429,18 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
                 <span className="landing-plan-footnote">
                   Menos que o custo de uma cobrança perdida.
                 </span>
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={abrirWhatsAppComercial}
-                >
-                  Desbloquear clientes ilimitados por R$ 14,99/mês
-                </button>
+                <div className="landing-action-stack">
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={abrirPagamentoPro}
+                  >
+                    Assinar Pro por {valorPlanoPro}
+                  </button>
+                  <p className="landing-payment-note">
+                    Pagamento seguro via Mercado Pago
+                  </p>
+                </div>
               </article>
             </div>
           </section>
@@ -421,27 +466,40 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
 
           <section className="landing-final-cta">
             <div className="landing-final-copy">
-              <h2>Teste grátis, organize sua cobrança e evolua para o Pro quando quiser</h2>
+              <h2>Assine o Pro agora ou comece grátis para testar com calma</h2>
               <p>
-                Comece com até 7 clientes grátis e, quando sua operação pedir
-                mais capacidade, avance para o plano mensal de R$ 14,99.
+                Se você já quer operar com clientes ilimitados, o Pro custa{' '}
+                {valorPlanoPro} com pagamento seguro via Mercado Pago. Se
+                preferir testar antes, o plano grátis continua disponível.
               </p>
             </div>
 
             <div className="landing-final-actions">
+              <div className="landing-action-stack">
+                <button
+                  type="button"
+                  className="button button-primary landing-cta-main"
+                  onClick={abrirPagamentoPro}
+                >
+                  Assinar Pro por {valorPlanoPro}
+                </button>
+                <p className="landing-payment-note">
+                  Pagamento seguro via Mercado Pago
+                </p>
+              </div>
               <button
                 type="button"
-                className="button button-primary"
+                className="button button-secondary landing-cta-secondary"
                 onClick={onComecarGratis}
               >
                 Começar grátis
               </button>
               <button
                 type="button"
-                className="button button-whatsapp"
-                onClick={abrirWhatsAppComercial}
+                className="button button-whatsapp landing-cta-whatsapp"
+                onClick={abrirWhatsAppSuporte}
               >
-                Falar no WhatsApp
+                Falar com suporte no WhatsApp
               </button>
             </div>
           </section>
@@ -452,9 +510,9 @@ export default function LandingPage({ onComecarGratis, onAbrirLogin }) {
         <button
           type="button"
           className="button button-primary landing-mobile-cta-button"
-          onClick={onComecarGratis}
+          onClick={abrirPagamentoPro}
         >
-          Começar grátis
+          Assinar Pro por {valorPlanoPro}
         </button>
       </div>
     </div>

@@ -393,14 +393,36 @@ select {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.landing-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-action-stack .button {
+  width: 100%;
 }
 
 .landing-cta-main {
+  min-width: 240px;
+}
+
+.landing-cta-secondary {
   min-width: 170px;
 }
 
 .landing-cta-whatsapp {
-  min-width: 190px;
+  min-width: 260px;
+}
+
+.landing-payment-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .landing-proof-grid {
@@ -888,6 +910,7 @@ select {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 .app-shell {
@@ -2093,7 +2116,12 @@ select {
 
   .landing-nav-button,
   .landing-cta-main,
+  .landing-cta-secondary,
   .landing-cta-whatsapp {
+    width: 100%;
+  }
+
+  .landing-action-stack {
     width: 100%;
   }
 
