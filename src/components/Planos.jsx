@@ -1,27 +1,6 @@
-const linkMercadoPago = 'https://mpago.la/1rRbcR8'
+import { useState } from 'react'
+
 const precoPlanoPro = 'R$ 14,99/mês'
-
-function abrirPagamentoPro() {
-  try {
-    const urlPagamento = new URL(linkMercadoPago)
-
-    if (!['http:', 'https:'].includes(urlPagamento.protocol)) {
-      return
-    }
-
-    const novaAba = window.open(
-      urlPagamento.toString(),
-      '_blank',
-      'noopener,noreferrer'
-    )
-
-    if (novaAba) {
-      novaAba.opener = null
-    }
-  } catch {
-    console.error('Link de pagamento do Plano Pro invalido.')
-  }
-}
 
 export default function Planos({
   planoUsuario,
@@ -31,8 +10,12 @@ export default function Planos({
   nomeUsuario,
   estaProximoDoLimite,
   atingiuLimitePlano,
+  userId,
+  email,
   onVoltarPainel,
 }) {
+  const [checkoutCarregando, setCheckoutCarregando] = useState(false)
+  const [erroCheckout, setErroCheckout] = useState('')
   const usuarioPro = planoUsuario === 'pro'
   const mensagemUsoPlano = atingiuLimitePlano
     ? `Seu plano grátis chegou ao limite de ${limiteClientes} clientes. Assine o Pro por ${precoPlanoPro} para continuar usando o sistema sem bloqueios.`
@@ -42,6 +25,50 @@ export default function Planos({
   const resumoPlanoAtual = usuarioPro
     ? `Plano Pro • ${precoPlanoPro} • Clientes ilimitados`
     : `Plano grátis • ${clientesUsados} / ${limiteClientes} clientes`
+
+  async function abrirPagamentoPro() {
+    if (checkoutCarregando) {
+      return
+    }
+
+    if (!userId || !email) {
+      setErroCheckout(
+        'Não foi possível identificar sua conta para iniciar a assinatura. Tente sair e entrar novamente.',
+      )
+      return
+    }
+
+    setCheckoutCarregando(true)
+    setErroCheckout('')
+
+    try {
+      const resposta = await fetch('/api/create-preference', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          email,
+        }),
+      })
+
+      const dados = await resposta.json().catch(() => ({}))
+
+      if (!resposta.ok || !dados?.init_point) {
+        throw new Error(dados?.error || 'Falha ao iniciar o checkout.')
+      }
+
+      window.location.href = dados.init_point
+    } catch (error) {
+      console.error('Erro ao criar checkout do Plano Pro.', error)
+      setErroCheckout(
+        'Não foi possível abrir o checkout agora. Tente novamente em alguns instantes.',
+      )
+    } finally {
+      setCheckoutCarregando(false)
+    }
+  }
 
   return (
     <div className="app-shell planos-shell">
@@ -101,6 +128,12 @@ export default function Planos({
       </header>
 
       <main className="app-content">
+        {erroCheckout && (
+          <div className="system-message system-message-erro" role="alert">
+            {erroCheckout}
+          </div>
+        )}
+
         <section className="planos-grid">
           <article className="plano-card">
             <h2>Comece com o essencial</h2>
@@ -170,8 +203,11 @@ export default function Planos({
                   type="button"
                   className="button button-primary"
                   onClick={abrirPagamentoPro}
+                  disabled={checkoutCarregando}
                 >
-                  Assinar Pro por {precoPlanoPro}
+                  {checkoutCarregando
+                    ? 'Redirecionando...'
+                    : `Assinar Pro por ${precoPlanoPro}`}
                 </button>
                 <p className="plano-payment-note">
                   Pagamento seguro via Mercado Pago

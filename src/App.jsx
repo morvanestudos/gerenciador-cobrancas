@@ -941,6 +941,8 @@ function App() {
         nomeUsuario={nomeUsuarioExibicao}
         estaProximoDoLimite={estaProximoDoLimite}
         atingiuLimitePlano={atingiuLimitePlano}
+        userId={sessao?.user?.id ?? ''}
+        email={sessao?.user?.email ?? ''}
         onVoltarPainel={() => setTelaApp('painel')}
       />
     )
