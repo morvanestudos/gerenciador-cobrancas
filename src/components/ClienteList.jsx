@@ -25,6 +25,7 @@ function normalizarVencimentoParaComparacao(data) {
 }
 
 export default function ClienteList({
+  sectionId,
   clientes,
   clienteExcluindoId,
   clienteAtualizandoStatusId,
@@ -62,11 +63,14 @@ export default function ClienteList({
     .map(({ cliente }) => cliente)
 
   return (
-    <section className="section-block section-block-list">
+    <section
+      id={sectionId}
+      className="section-block section-block-list section-block-clients"
+    >
       <div className="section-heading section-heading-inline">
         <div>
-          <h2>Clientes cadastrados</h2>
-          <p>Acompanhe status, cobranças e ações rápidas em um só lugar.</p>
+          <h2>Carteira de clientes</h2>
+          <p>Visual premium para acompanhar status, valores e próximas ações.</p>
         </div>
 
         <span className="list-count">

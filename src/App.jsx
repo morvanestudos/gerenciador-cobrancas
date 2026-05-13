@@ -380,6 +380,29 @@ function formatarMoeda(valor) {
   }).format(valor)
 }
 
+function formatarDataCurta(data) {
+  const dataFormatada = formatarVencimento(data)
+
+  if (!dataFormatada.includes('/')) {
+    return dataFormatada
+  }
+
+  const [dia, mes] = dataFormatada.split('/')
+
+  return `${dia}/${mes}`
+}
+
+function compararClientesPorVencimento(clienteA, clienteB) {
+  const vencimentoA = normalizarDataParaComparacao(clienteA?.vencimento)
+  const vencimentoB = normalizarDataParaComparacao(clienteB?.vencimento)
+
+  if (vencimentoA !== vencimentoB) {
+    return vencimentoA.localeCompare(vencimentoB)
+  }
+
+  return String(clienteA?.nome ?? '').localeCompare(String(clienteB?.nome ?? ''))
+}
+
 function obterNomeExibicaoUsuario(sessao, perfilUsuario) {
   const nomeCompleto =
     perfilUsuario?.nome_completo?.trim() ??
@@ -831,6 +854,12 @@ function App() {
   const clientesAtrasados = clientes.filter((cliente) =>
     clienteEstaAtrasado(cliente),
   )
+  const clientesPendentes = clientes.filter((cliente) => cliente.status === 'pendente')
+  const clientesPagos = clientes.filter((cliente) => cliente.status === 'pago')
+  const clientesRecorrentes = clientes.filter((cliente) => cliente.recorrente)
+  const clientesComCobrancaAtiva = clientes.filter(
+    (cliente) => cliente.status !== 'pago',
+  )
   const alertasPainel = [
     clientesVencendoHoje.length > 0
       ? {
@@ -867,6 +896,75 @@ function App() {
       ? total + converterValorParaNumero(cliente.valor)
       : total
   }, 0)
+  const totalEmAtraso = clientesAtrasados.reduce((total, cliente) => {
+    return total + converterValorParaNumero(cliente.valor)
+  }, 0)
+  const cobrancasPrioritarias = clientesAtrasados.length + clientesVencendoHoje.length
+  const proximosVencimentos = [...clientesComCobrancaAtiva]
+    .filter(
+      (cliente) =>
+        normalizarDataParaComparacao(cliente.vencimento) >= dataAtualComparacao,
+    )
+    .sort(compararClientesPorVencimento)
+    .slice(0, 4)
+  const atividadeRecente = [...clientes]
+    .sort((clienteA, clienteB) => {
+      const dataA = String(clienteA?.created_at ?? '')
+      const dataB = String(clienteB?.created_at ?? '')
+
+      if (dataA && dataB && dataA !== dataB) {
+        return dataB.localeCompare(dataA)
+      }
+
+      return compararClientesPorVencimento(clienteA, clienteB)
+    })
+    .slice(0, 4)
+  const metricasDashboard = [
+    {
+      chave: 'receber',
+      classe: 'receber',
+      icone: 'R$',
+      titulo: 'Total a receber',
+      valor: formatarMoeda(totalAReceber),
+      contexto:
+        clientesComCobrancaAtiva.length === 1
+          ? '1 cobrança ativa no painel'
+          : `${clientesComCobrancaAtiva.length} cobranças ativas no painel`,
+    },
+    {
+      chave: 'recebido',
+      classe: 'recebido',
+      icone: 'OK',
+      titulo: 'Total recebido',
+      valor: formatarMoeda(totalRecebido),
+      contexto:
+        clientesPagos.length === 1
+          ? '1 pagamento confirmado'
+          : `${clientesPagos.length} pagamentos confirmados`,
+    },
+    {
+      chave: 'atrasados',
+      classe: 'atrasados',
+      icone: 'AT',
+      titulo: 'Clientes atrasados',
+      valor: String(clientesAtrasados.length),
+      contexto:
+        totalEmAtraso > 0
+          ? `${formatarMoeda(totalEmAtraso)} em valores vencidos`
+          : 'Nenhum valor em atraso',
+    },
+    {
+      chave: 'whatsapp',
+      classe: 'whatsapp',
+      icone: 'WA',
+      titulo: 'Cobranças no WhatsApp',
+      valor: String(cobrancasPrioritarias),
+      contexto:
+        cobrancasPrioritarias === 0
+          ? 'Sem cobranças prioritárias hoje'
+          : 'Clientes prontos para contato rápido',
+    },
+  ]
 
   const clientesFiltrados = clientes.filter((cliente) => {
     const correspondeBusca =
@@ -950,17 +1048,48 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-header-content">
-          <span className="app-user-greeting">Olá, {nomeUsuarioExibicao} 👋</span>
-          <h1>Gestão de Clientes e Cobranças</h1>
-          <p>
-            Centralize clientes, acompanhe recebimentos e acelere cobranças com
-            ações rápidas.
-          </p>
+      <header className="app-header app-header-dashboard">
+        <div className="header-brand">
+          <div className="header-brand-mark" aria-hidden="true">
+            GC
+          </div>
+
+          <div className="header-brand-copy">
+            <span className="header-brand-kicker">Workspace financeiro</span>
+            <h1>Gestão de Clientes e Cobranças</h1>
+            <p>
+              Seu centro de controle para recebimentos, clientes e cobranças
+              rápidas em um fluxo mais claro e profissional.
+            </p>
+          </div>
         </div>
 
-        <div className="header-side">
+        <nav className="header-nav" aria-label="Navegação interna">
+          <button
+            type="button"
+            className="header-nav-link header-nav-link-active"
+            onClick={() =>
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth',
+              })
+            }
+          >
+            Dashboard
+          </button>
+          <a href="#clientes-section" className="header-nav-link">
+            Clientes
+          </a>
+          <button
+            type="button"
+            className="header-nav-link"
+            onClick={() => setTelaApp('planos')}
+          >
+            Planos
+          </button>
+        </nav>
+
+        <div className="header-side header-side-dashboard">
           <div
             className={`plan-usage-card ${
               atingiuLimitePlano
@@ -980,6 +1109,12 @@ function App() {
                 />
               </div>
             )}
+          </div>
+
+          <div className="header-user-card">
+            <span className="header-user-label">Conta conectada</span>
+            <strong>{nomeUsuarioExibicao}</strong>
+            <span>{sessao?.user?.email ?? 'Conta autenticada'}</span>
           </div>
 
           <div className="header-actions">
@@ -1045,27 +1180,249 @@ function App() {
           </section>
         )}
 
-        <section className="dashboard-grid">
-          <article className="dashboard-card dashboard-card-receber">
-            <span className="dashboard-label">A receber</span>
-            <strong>{formatarMoeda(totalAReceber)}</strong>
-            <p>Cobranças pendentes e atrasadas.</p>
-          </article>
-
-          <article className="dashboard-card dashboard-card-recebido">
-            <span className="dashboard-label">Recebido</span>
-            <strong>{formatarMoeda(totalRecebido)}</strong>
-            <p>Valores confirmados como pagos.</p>
-          </article>
-
-          <article className="dashboard-card dashboard-card-clientes">
-            <span className="dashboard-label">Clientes</span>
-            <strong>{clientes.length}</strong>
-            <p>Total de cadastros na carteira.</p>
-          </article>
+        <section className="dashboard-grid dashboard-metrics-grid">
+          {metricasDashboard.map((metrica) => (
+            <article
+              key={metrica.chave}
+              className={`dashboard-card dashboard-card-${metrica.classe}`}
+            >
+              <div className="dashboard-card-top">
+                <span className="dashboard-label">{metrica.titulo}</span>
+                <span className="dashboard-icon" aria-hidden="true">
+                  {metrica.icone}
+                </span>
+              </div>
+              <strong>{metrica.valor}</strong>
+              <p>{metrica.contexto}</p>
+            </article>
+          ))}
         </section>
 
-        <div className="top-grid">
+        <section className="dashboard-focus-grid">
+          <div className="dashboard-focus-main">
+            <article className="section-block dashboard-stream-card">
+              <div className="section-heading section-heading-inline">
+                <div>
+                  <h2>Clientes em atraso</h2>
+                  <p>Quem precisa de ação imediata para recuperar receita.</p>
+                </div>
+                <span className="list-count">
+                  {clientesAtrasados.length}{' '}
+                  {clientesAtrasados.length === 1 ? 'cliente' : 'clientes'}
+                </span>
+              </div>
+
+              {clientesAtrasados.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  Nenhum cliente em atraso no momento.
+                </div>
+              ) : (
+                <div className="dashboard-mini-list">
+                  {clientesAtrasados
+                    .sort(compararClientesPorVencimento)
+                    .slice(0, 4)
+                    .map((cliente) => (
+                      <article
+                        key={cliente.id}
+                        className="dashboard-mini-card dashboard-mini-card-danger"
+                      >
+                        <div className="dashboard-mini-header">
+                          <div>
+                            <strong>{cliente.nome}</strong>
+                            <span>{cliente.telefone}</span>
+                          </div>
+                          <span className="status-badge status-atrasado">
+                            Atrasado
+                          </span>
+                        </div>
+                        <div className="dashboard-mini-body">
+                          <div>
+                            <span>Valor</span>
+                            <strong>{cliente.valor}</strong>
+                          </div>
+                          <div>
+                            <span>Venceu em</span>
+                            <strong>{cliente.vencimento}</strong>
+                          </div>
+                        </div>
+                        <div className="dashboard-mini-actions">
+                          <button
+                            type="button"
+                            className="button button-whatsapp"
+                            onClick={() => abrirWhatsAppCliente(cliente)}
+                          >
+                            Cobrar no WhatsApp
+                          </button>
+                          <button
+                            type="button"
+                            className="button button-light"
+                            onClick={() => iniciarEdicaoCliente(cliente)}
+                          >
+                            Revisar cadastro
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                </div>
+              )}
+            </article>
+
+            <article className="section-block dashboard-stream-card">
+              <div className="section-heading section-heading-inline">
+                <div>
+                  <h2>Clientes vencendo hoje</h2>
+                  <p>Contatos do dia para manter o fluxo de caixa em ordem.</p>
+                </div>
+                <span className="list-count">
+                  {clientesVencendoHoje.length}{' '}
+                  {clientesVencendoHoje.length === 1 ? 'cliente' : 'clientes'}
+                </span>
+              </div>
+
+              {clientesVencendoHoje.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  Nenhum vencimento programado para hoje.
+                </div>
+              ) : (
+                <div className="dashboard-mini-list">
+                  {clientesVencendoHoje
+                    .sort(compararClientesPorVencimento)
+                    .slice(0, 4)
+                    .map((cliente) => (
+                      <article
+                        key={cliente.id}
+                        className="dashboard-mini-card dashboard-mini-card-warning"
+                      >
+                        <div className="dashboard-mini-header">
+                          <div>
+                            <strong>{cliente.nome}</strong>
+                            <span>{cliente.telefone}</span>
+                          </div>
+                          <span className="status-badge status-pendente">
+                            Hoje
+                          </span>
+                        </div>
+                        <div className="dashboard-mini-body">
+                          <div>
+                            <span>Valor</span>
+                            <strong>{cliente.valor}</strong>
+                          </div>
+                          <div>
+                            <span>Vencimento</span>
+                            <strong>{cliente.vencimento}</strong>
+                          </div>
+                        </div>
+                        <div className="dashboard-mini-actions">
+                          <button
+                            type="button"
+                            className="button button-whatsapp"
+                            onClick={() => abrirWhatsAppCliente(cliente)}
+                          >
+                            Abrir cobrança
+                          </button>
+                          <button
+                            type="button"
+                            className="button button-light"
+                            onClick={() => iniciarEdicaoCliente(cliente)}
+                          >
+                            Ver detalhes
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                </div>
+              )}
+            </article>
+          </div>
+
+          <aside className="dashboard-focus-side">
+            <article className="section-block dashboard-insight-card">
+              <div className="section-heading">
+                <h2>Resumo rápido</h2>
+                <p>Visão enxuta da carteira para decidir rápido.</p>
+              </div>
+
+              <div className="dashboard-insight-metrics">
+                <div className="dashboard-insight-item">
+                  <span>Pendentes</span>
+                  <strong>{clientesPendentes.length}</strong>
+                </div>
+                <div className="dashboard-insight-item">
+                  <span>Pagos</span>
+                  <strong>{clientesPagos.length}</strong>
+                </div>
+                <div className="dashboard-insight-item">
+                  <span>Recorrentes</span>
+                  <strong>{clientesRecorrentes.length}</strong>
+                </div>
+                <div className="dashboard-insight-item">
+                  <span>Carteira</span>
+                  <strong>{clientes.length}</strong>
+                </div>
+              </div>
+            </article>
+
+            <article className="section-block dashboard-insight-card">
+              <div className="section-heading">
+                <h2>Próximos vencimentos</h2>
+                <p>O que entra na agenda dos próximos dias.</p>
+              </div>
+
+              {proximosVencimentos.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  Nenhum vencimento futuro disponível.
+                </div>
+              ) : (
+                <div className="dashboard-compact-list">
+                  {proximosVencimentos.map((cliente) => (
+                    <article key={cliente.id} className="dashboard-compact-item">
+                      <div>
+                        <strong>{cliente.nome}</strong>
+                        <span>{cliente.valor}</span>
+                      </div>
+                      <span>{formatarDataCurta(cliente.vencimento)}</span>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </article>
+
+            <article className="section-block dashboard-insight-card">
+              <div className="section-heading">
+                <h2>Atividade recente</h2>
+                <p>Últimos clientes cadastrados ou atualizados na carteira.</p>
+              </div>
+
+              {atividadeRecente.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  Sua atividade recente aparecerá aqui.
+                </div>
+              ) : (
+                <div className="dashboard-compact-list">
+                  {atividadeRecente.map((cliente) => (
+                    <article key={cliente.id} className="dashboard-compact-item">
+                      <div>
+                        <strong>{cliente.nome}</strong>
+                        <span>
+                          {cliente.recorrente
+                            ? 'Cobrança recorrente ativa'
+                            : 'Cadastro padrão'}
+                        </span>
+                      </div>
+                      <span>
+                        {cliente.created_at
+                          ? formatarDataCurta(cliente.created_at)
+                          : formatarDataCurta(cliente.vencimento)}
+                      </span>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </article>
+          </aside>
+        </section>
+
+        <div className="top-grid dashboard-workspace-grid">
           <ClienteForm
             key={clienteEmEdicao ? clienteEmEdicao.id : 'novo-cliente'}
             onCancelarEdicao={cancelarEdicaoCliente}
@@ -1082,7 +1439,10 @@ function App() {
         </div>
 
         {clientesCarregando ? (
-          <section className="section-block section-block-list">
+          <section
+            id="clientes-section"
+            className="section-block section-block-list"
+          >
             <div className="section-heading">
               <h2>Clientes cadastrados</h2>
               <p>Sincronizando clientes com sua conta.</p>
@@ -1092,6 +1452,7 @@ function App() {
           </section>
         ) : (
           <ClienteList
+            sectionId="clientes-section"
             clientes={clientesFiltrados}
             clienteExcluindoId={clienteExcluindoId}
             clienteAtualizandoStatusId={clienteAtualizandoStatusId}

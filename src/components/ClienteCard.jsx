@@ -37,33 +37,35 @@ export default function ClienteCard({
           <div className="cliente-avatar">{iniciaisCliente}</div>
 
           <div className="card-title-group">
-            <span className="card-kicker">Cliente</span>
             <h3>{cliente.nome}</h3>
+            <p>{cliente.telefone}</p>
           </div>
         </div>
 
-        <div className="card-status-group">
-          <span className="card-status-label">Status</span>
+        <div className="card-top-aside">
           <span className={`status-badge status-${cliente.status}`}>
             {statusLabel[cliente.status]}
           </span>
+          {cliente.recorrente && (
+            <span className="subtle-badge">Recorrente</span>
+          )}
         </div>
       </div>
 
-      <div className="card-details">
-        <div className="detail-row">
-          <span>Telefone</span>
-          <strong>{cliente.telefone}</strong>
-        </div>
-
-        <div className="detail-row">
+      <div className="card-metrics">
+        <div className="detail-row detail-row-featured">
           <span>Valor</span>
           <strong>{cliente.valor}</strong>
         </div>
 
-        <div className="detail-row">
+        <div className="detail-row detail-row-featured">
           <span>Vencimento</span>
           <strong>{cliente.vencimento}</strong>
+        </div>
+
+        <div className="detail-row detail-row-compact">
+          <span>Telefone</span>
+          <strong>{cliente.telefone}</strong>
         </div>
       </div>
 
